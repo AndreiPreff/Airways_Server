@@ -1,0 +1,25 @@
+version: '3'
+services:
+  # PostgreSQL database
+  database:
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432 # Adjust the port if needed
+    env_file:
+      - .env
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - airways-network
+
+
+
+networks:
+  airways-network:
+    driver: bridge
+
+volumes:
+  db-data:
+
+  
