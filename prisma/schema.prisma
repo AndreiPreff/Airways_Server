@@ -30,7 +30,7 @@ model User {
   password     String
   first_name   String
   last_name    String
-  role         Role
+  role         Role     @default(USER)
   refreshToken String?
 
   orders Order[]
