@@ -32,6 +32,7 @@ export class UserDto extends UUIDDto {
     it.updatedAt = entity.updatedAt.valueOf();
     it.role = entity.role;
     it.email = entity.email;
+    it.password = entity.password;
     it.first_name = entity.first_name;
     it.last_name = entity.last_name;
     it.refreshToken = entity.refreshToken;
