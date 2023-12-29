@@ -1,16 +1,14 @@
+import { Role } from '@prisma/client';
 import {
-  IsNotEmpty,
-  MinLength,
-  IsString,
-  validate,
   IsEmail,
   IsEnum,
-  IsOptional
+  IsOptional,
+  IsString,
+  MinLength,
+  validate,
 } from 'class-validator';
-import { Role } from '@prisma/client';
 
 export class UpdateUserForm {
-
   @IsOptional()
   @IsEmail()
   email: string;

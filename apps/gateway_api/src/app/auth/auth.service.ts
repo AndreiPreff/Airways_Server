@@ -1,26 +1,25 @@
 import { Injectable } from '@nestjs/common';
 
-import { SecurityService } from 'libs/security/security.service';
-import { UsersRepo } from 'apps/gateway_api/src/domain/repos/users.repo';
 import { User } from '@prisma/client';
 import { TokensDto } from 'apps/gateway_api/src/domain/dtos/tokens.dto';
-
+import { UsersRepo } from 'apps/gateway_api/src/domain/repos/users.repo';
+import { SecurityService } from 'libs/security/security.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private usersRepo: UsersRepo, 
-    private securityService: SecurityService
+    private usersRepo: UsersRepo,
+    private securityService: SecurityService,
   ) {}
 
-  async authenticate(user: Pick<User, 'email'| 'role' | 'id'>) {
+  async authenticate(user: Pick<User, 'email' | 'role' | 'id'>) {
     const [accessToken, refreshToken] = await Promise.all([
       this.securityService.getAccesToken(user),
-      this.securityService.getAndSaveRefreshToken(user)
+      this.securityService.getAndSaveRefreshToken(user),
     ]);
     return {
       access_token: accessToken,
-      refresh_token: refreshToken
+      refresh_token: refreshToken,
     } as TokensDto;
   }
 
@@ -33,6 +32,9 @@ export class AuthService {
   }
 
   async compareRefreshTokens(refreshToken: string, user: User) {
-    return this.securityService.compareRefreshTokens(refreshToken, user.refreshToken);
+    return this.securityService.compareRefreshTokens(
+      refreshToken,
+      user.refreshToken,
+    );
   }
 }

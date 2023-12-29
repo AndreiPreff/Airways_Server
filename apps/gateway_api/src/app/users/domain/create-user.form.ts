@@ -1,13 +1,12 @@
 import {
+  IsEmail,
   IsNotEmpty,
-  MinLength,
   IsString,
+  MinLength,
   validate,
-  IsEmail
 } from 'class-validator';
 
 export class CreateUserForm {
-
   @IsNotEmpty()
   @IsEmail()
   email: string;

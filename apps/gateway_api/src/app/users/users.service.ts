@@ -1,17 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { UsersRepo } from 'apps/gateway_api/src/domain/repos/users.repo';
 import { User } from '@prisma/client';
+import { UsersRepo } from 'apps/gateway_api/src/domain/repos/users.repo';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-  constructor(private usersRepo: UsersRepo){}
+  constructor(private usersRepo: UsersRepo) {}
 
-  async create(user: Pick<User, 'email' | 'first_name' | 'last_name' | 'password'>) {
+  async create(
+    user: Pick<User, 'email' | 'first_name' | 'last_name' | 'password'>,
+  ) {
     const hashedPassword = await bcrypt.hash(user.password, 10);
     return this.usersRepo.create({
       ...user,
-      password: hashedPassword
+      password: hashedPassword,
     });
   }
 

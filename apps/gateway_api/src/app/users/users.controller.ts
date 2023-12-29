@@ -1,20 +1,25 @@
-import { 
-  Controller, 
-  Get, Post, Patch, Delete, 
-  Body, Param, 
-  NotFoundException, BadRequestException, ConflictException 
+import {
+  BadRequestException,
+  Body,
+  ConflictException,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
 } from '@nestjs/common';
 
-import { UsersService } from './users.service';
+import { Role } from '@prisma/client';
+import { UserSessionDto } from 'apps/gateway_api/src/domain/dtos/user-session.dto';
+import { UserDto } from 'apps/gateway_api/src/domain/dtos/user.dto';
+import { CurrentUser } from 'libs/security/decorators/current-user.decorator';
+import { Public } from 'libs/security/decorators/public.decorator';
+import { Roles } from 'libs/security/decorators/roles.decorator';
 import { CreateUserForm } from './domain/create-user.form';
 import { UpdateUserForm } from './domain/update-user.form';
-import { UserDto } from 'apps/gateway_api/src/domain/dtos/user.dto';
-import { Role } from '@prisma/client';
-import { Roles } from 'libs/security/decorators/roles.decorator';
-import { Public } from 'libs/security/decorators/public.decorator';
-import { CurrentUser } from 'libs/security/decorators/current-user.decorator';
-import { UserSessionDto } from 'apps/gateway_api/src/domain/dtos/user-session.dto';
-
+import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
@@ -30,8 +35,10 @@ export class UsersController {
     }
     const userExists = await this.usersService.findByEmail(body.email);
     if (userExists) {
-      throw new ConflictException('A user with the provided email already exists.');
-    };
+      throw new ConflictException(
+        'A user with the provided email already exists.',
+      );
+    }
     const entity = await this.usersService.create(form);
     if (!entity) {
       throw new ConflictException();
@@ -54,7 +61,9 @@ export class UsersController {
   async findById(@Param('userId') userId: string) {
     const user = await this.usersService.findById(userId);
     if (!user) {
-      throw new NotFoundException(`User with the id of ${userId} does not exist.`);
+      throw new NotFoundException(
+        `User with the id of ${userId} does not exist.`,
+      );
     }
     return UserDto.fromEntity(user);
   }

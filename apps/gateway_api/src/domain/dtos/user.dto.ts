@@ -1,4 +1,4 @@
-import { User, Role } from '@prisma/client';
+import { Role, User } from '@prisma/client';
 import { IsEmail, IsEnum, IsString, MinLength } from 'class-validator';
 import { UUIDDto } from './uuid.dto';
 

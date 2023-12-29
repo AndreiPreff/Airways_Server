@@ -1,19 +1,27 @@
-import { Controller, Get, Post, Body, UseGuards, BadRequestException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Post,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 
-import { AuthService } from './auth.service';
 import { UsersService } from 'apps/gateway_api/src/app/users/users.service';
-import { Public } from 'libs/security/decorators/public.decorator';
-import { CurrentUser } from 'libs/security/decorators/current-user.decorator';
 import { UserSessionDto } from 'apps/gateway_api/src/domain/dtos/user-session.dto';
-import { LoginForm } from './domain/login.form';
+import { CurrentUser } from 'libs/security/decorators/current-user.decorator';
+import { Public } from 'libs/security/decorators/public.decorator';
 import { RefreshTokenGuard } from 'libs/security/guards/refresh-token.guard';
-
+import { AuthService } from './auth.service';
+import { LoginForm } from './domain/login.form';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly usersService: UsersService
+    private readonly usersService: UsersService,
   ) {}
 
   @Public()
@@ -23,12 +31,15 @@ export class AuthController {
     const errors = await LoginForm.validate(form);
     if (errors) {
       throw new BadRequestException();
-    };
+    }
 
     const user = await this.usersService.findByEmail(form.email);
     if (!user) throw new NotFoundException('User not found');
 
-    const isValid = await this.authService.comparePasswords(form.password, user)    
+    const isValid = await this.authService.comparePasswords(
+      form.password,
+      user,
+    );
     if (!isValid) throw new UnauthorizedException('Invalid password');
 
     return this.authService.authenticate(user);
@@ -50,8 +61,11 @@ export class AuthController {
     }
     if (!user.refreshToken) {
       throw new UnauthorizedException('Refresh token is not present');
-    };
-    const refreshTokenMatches = await this.authService.compareRefreshTokens(currentUser.refreshToken, user);
+    }
+    const refreshTokenMatches = await this.authService.compareRefreshTokens(
+      currentUser.refreshToken,
+      user,
+    );
     if (!refreshTokenMatches) {
       throw new UnauthorizedException('Refresh token is not valid');
     }
