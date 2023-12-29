@@ -14,7 +14,7 @@ export class AuthService {
 
   async authenticate(user: Pick<User, 'email' | 'role' | 'id'>) {
     const [accessToken, refreshToken] = await Promise.all([
-      this.securityService.getAccesToken(user),
+      this.securityService.getAccessToken(user),
       this.securityService.getAndSaveRefreshToken(user),
     ]);
     return {

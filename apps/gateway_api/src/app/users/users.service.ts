@@ -41,4 +41,9 @@ export class UsersService {
   async delete(userId: string) {
     return this.usersRepo.delete(userId);
   }
+
+  async resetPassword(user: User, newPassword: string) {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await this.usersRepo.update(user.id, { password: hashedPassword });
+  }
 }

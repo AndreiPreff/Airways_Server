@@ -8,43 +8,19 @@ import {
   NotFoundException,
   Param,
   Patch,
-  Post,
 } from '@nestjs/common';
 
 import { Role } from '@prisma/client';
 import { UserSessionDto } from 'apps/gateway_api/src/domain/dtos/user-session.dto';
 import { UserDto } from 'apps/gateway_api/src/domain/dtos/user.dto';
 import { CurrentUser } from 'libs/security/decorators/current-user.decorator';
-import { Public } from 'libs/security/decorators/public.decorator';
 import { Roles } from 'libs/security/decorators/roles.decorator';
-import { CreateUserForm } from './domain/create-user.form';
 import { UpdateUserForm } from './domain/update-user.form';
 import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
-
-  @Public()
-  @Post()
-  async create(@Body() body: CreateUserForm) {
-    const form = CreateUserForm.from(body);
-    const errors = await CreateUserForm.validate(form);
-    if (errors) {
-      throw new BadRequestException();
-    }
-    const userExists = await this.usersService.findByEmail(body.email);
-    if (userExists) {
-      throw new ConflictException(
-        'A user with the provided email already exists.',
-      );
-    }
-    const entity = await this.usersService.create(form);
-    if (!entity) {
-      throw new ConflictException();
-    }
-    return UserDto.fromEntity(entity);
-  }
 
   @Roles(Role.USER)
   @Get('/profile')

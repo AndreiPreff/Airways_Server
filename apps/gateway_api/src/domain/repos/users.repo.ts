@@ -41,4 +41,11 @@ export class UsersRepo {
   async delete(userId: string) {
     return this.prisma.user.delete({ where: { id: userId } });
   }
+
+  async updatePassword(userId: string, password: string) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { password },
+    });
+  }
 }
