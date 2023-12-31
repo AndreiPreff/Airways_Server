@@ -4,6 +4,8 @@ import {
   ConflictException,
   Controller,
   Get,
+  HttpException,
+  HttpStatus,
   NotFoundException,
   Post,
   UnauthorizedException,
@@ -15,11 +17,11 @@ import { UserSessionDto } from 'apps/gateway_api/src/domain/dtos/user-session.dt
 import { CurrentUser } from 'libs/security/decorators/current-user.decorator';
 import { Public } from 'libs/security/decorators/public.decorator';
 import { RefreshTokenGuard } from 'libs/security/guards/refresh-token.guard';
+import { UserDto } from '../../domain/dtos/user.dto';
+import { CreateUserForm } from '../users/domain/create-user.form';
 import { AuthService } from './auth.service';
 import { LoginForm } from './domain/login.form';
 import { ResetPasswordForm } from './domain/reset-password.form';
-import { UserDto } from '../../domain/dtos/user.dto';
-import { CreateUserForm } from '../users/domain/create-user.form';
 
 @Controller('auth')
 export class AuthController {
@@ -65,7 +67,8 @@ export class AuthController {
       form.password,
       user,
     );
-    if (!isValid) throw new UnauthorizedException('Invalid password');
+    if (!isValid)
+      throw new HttpException('Invalid password', HttpStatus.FORBIDDEN);
 
     return this.authService.authenticate(user);
   }
