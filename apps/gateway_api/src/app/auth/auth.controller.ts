@@ -8,7 +8,6 @@ import {
   HttpStatus,
   NotFoundException,
   Post,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 
@@ -68,7 +67,7 @@ export class AuthController {
       user,
     );
     if (!isValid)
-      throw new HttpException('Invalid password', HttpStatus.FORBIDDEN);
+      throw new HttpException('Invalid password', HttpStatus.FORBIDDEN); //
 
     return this.authService.authenticate(user);
   }
@@ -85,17 +84,23 @@ export class AuthController {
   async refreshTokens(@CurrentUser() currentUser: UserSessionDto) {
     const user = await this.usersService.findById(currentUser.sub);
     if (!user) {
-      throw new UnauthorizedException();
+      throw new HttpException('User not found', HttpStatus.FORBIDDEN);
     }
     if (!user.refreshToken) {
-      throw new UnauthorizedException('Refresh token is not present');
+      throw new HttpException(
+        'Refresh token is not present',
+        HttpStatus.FORBIDDEN,
+      );
     }
     const refreshTokenMatches = await this.authService.compareRefreshTokens(
       currentUser.refreshToken,
       user,
     );
     if (!refreshTokenMatches) {
-      throw new UnauthorizedException('Refresh token is not valid');
+      throw new HttpException(
+        'Refresh token is not valid',
+        HttpStatus.FORBIDDEN,
+      );
     }
     return this.authService.authenticate(user);
   }
