@@ -12,8 +12,21 @@ services:
       - db-data:/var/lib/postgresql/data
     networks:
       - airways-network
-
-
+  
+  # pgAdmin
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    depends_on:
+      - database
+    ports:
+      - 82:80
+    env_file:
+      - .env
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    networks:
+      - airways-network
 
 networks:
   airways-network:
@@ -21,5 +34,6 @@ networks:
 
 volumes:
   db-data:
+  pgadmin-data:
 
   
