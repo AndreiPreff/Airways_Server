@@ -1,4 +1,10 @@
-import { IsDate, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 
 export class FindTicketsForm {
   @IsNotEmpty()
@@ -10,17 +16,16 @@ export class FindTicketsForm {
   to: string;
 
   @IsNotEmpty()
-  @IsDate()
   departureDate: Date;
 
   @IsNotEmpty()
   @Min(0)
-  maxStops: number; // Количество пересадок (0, 1, 2)
+  maxStops: number;
 
   @IsNotEmpty()
-  roundTrip: boolean; // Нужны ли билеты туда-назад
+  @IsBoolean()
+  roundTrip: boolean;
 
   @IsOptional()
-  @IsDate()
-  returnDate?: Date; // Дата обратного пути (может быть не указана, если roundTrip === false)
+  returnDate?: Date;
 }

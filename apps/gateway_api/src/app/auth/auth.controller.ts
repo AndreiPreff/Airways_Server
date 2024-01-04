@@ -67,7 +67,7 @@ export class AuthController {
       user,
     );
     if (!isValid)
-      throw new HttpException('Invalid password', HttpStatus.FORBIDDEN); //
+      throw new HttpException('Invalid password', HttpStatus.FORBIDDEN);
 
     return this.authService.authenticate(user);
   }

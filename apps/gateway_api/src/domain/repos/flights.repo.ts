@@ -6,18 +6,21 @@ import { PrismaService } from 'libs/prisma/prisma.service';
 export class FlightsRepo {
   constructor(private readonly prisma: PrismaService) {}
 
-  // async findAvailableTickets(formData: FindTicketsForm) {
-  //   // Здесь вы можете использовать Prisma для выполнения запросов к базе данных
-  //   // Например, prisma.flight.findMany({ where: { ваше_условие_поиска } })
-  //   // Затем обработайте результат и верните его
-  //   return [];
-  // }
-
   async getAllFlights(date: Date): Promise<Flight[]> {
+    const originalDate = new Date(date);
+    const endOfDayDate = new Date(originalDate);
+    endOfDayDate.setUTCHours(23, 59, 59, 999);
+    const newDateFormattedString =
+      endOfDayDate.toISOString().slice(0, -5) + 'Z';
+
     return this.prisma.flight.findMany({
       where: {
         departure_time: {
           gte: date,
+          lte: newDateFormattedString,
+        },
+        available_tickets: {
+          gt: 0,
         },
       },
     });
