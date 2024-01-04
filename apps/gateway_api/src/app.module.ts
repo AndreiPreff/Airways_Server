@@ -1,17 +1,18 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 
+import { PrismaModule } from 'libs/prisma/prisma.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UsersModule } from './app/users/users.module';
-import { PrismaModule } from 'libs/prisma/prisma.module';
 import { AuthModule } from './app/auth/auth.module';
+import { UsersModule } from './app/users/users.module';
 
 import { JwtAuthGuard } from 'libs/security/guards/jwt-auth.guard';
 import { RolesGuard } from 'libs/security/guards/roles.guard';
+import { FlightsModule } from './app/flights/flights.module';
 
 @Module({
-  imports: [PrismaModule, UsersModule, AuthModule],
+  imports: [PrismaModule, UsersModule, AuthModule, FlightsModule],
   controllers: [AppController],
   providers: [
     AppService,
