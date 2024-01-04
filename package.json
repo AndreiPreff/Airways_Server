@@ -21,7 +21,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./apps/gateway_api/test/jest-e2e.json"
+    "test:e2e": "jest --config ./apps/gateway_api/test/jest-e2e.json",
+    "seed": "ts-node seeder/seed.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
@@ -37,6 +38,7 @@
     "csv-parse": "^5.5.3",
     "csv-parser": "^3.0.0",
     "date-fns": "^3.0.6",
+    "exceljs": "^4.4.0",
     "fast-csv": "^4.3.6",
     "fs": "^0.0.1-security",
     "moment": "^2.30.1",
