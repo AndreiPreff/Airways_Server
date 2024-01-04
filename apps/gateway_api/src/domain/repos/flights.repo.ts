@@ -6,7 +6,7 @@ import { PrismaService } from 'libs/prisma/prisma.service';
 export class FlightsRepo {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getAllFlights(date: Date): Promise<Flight[]> {
+  async getAllFlights(date: Date, ticketsAmount: number): Promise<Flight[]> {
     const originalDate = new Date(date);
     const endOfDayDate = new Date(originalDate);
     endOfDayDate.setUTCHours(23, 59, 59, 999);
@@ -20,7 +20,7 @@ export class FlightsRepo {
           lte: newDateFormattedString,
         },
         available_tickets: {
-          gt: 0,
+          gte: ticketsAmount,
         },
       },
     });

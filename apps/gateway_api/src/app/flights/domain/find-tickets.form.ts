@@ -28,4 +28,7 @@ export class FindTicketsForm {
 
   @IsOptional()
   returnDate?: Date;
+
+  @IsNotEmpty()
+  ticketsAmount: number;
 }

@@ -8,11 +8,15 @@ export class FlightsService {
   constructor(private readonly flightsRepo: FlightsRepo) {}
 
   async findAvailableTickets(formData: FindTicketsForm): Promise<any> {
-    const { from, to, departureDate, maxStops, returnDate } = formData;
+    const { from, to, departureDate, maxStops, returnDate, ticketsAmount } =
+      formData;
 
-    const flightsThere = await this.flightsRepo.getAllFlights(departureDate);
+    const flightsThere = await this.flightsRepo.getAllFlights(
+      departureDate,
+      ticketsAmount,
+    );
     const flightsBack = returnDate
-      ? await this.flightsRepo.getAllFlights(returnDate)
+      ? await this.flightsRepo.getAllFlights(returnDate, ticketsAmount)
       : [];
 
     const thereRoutes = this.findRoutes(flightsThere, from, to, maxStops);
