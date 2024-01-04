@@ -11,13 +11,10 @@ export class FlightsController {
   @Post('/available-tickets')
   async getAvailableTickets(@Body() formData: FindTicketsForm) {
     try {
-      // Вызываем метод сервиса для получения доступных билетов
       const availableTickets =
         await this.flightsService.findAvailableTickets(formData);
-      // Отправляем результат на фронтенд
       return { success: true, data: availableTickets };
     } catch (error) {
-      // Обрабатываем ошибки и отправляем сообщение об ошибке на фронтенд
       return { success: false, error: error.message };
     }
   }

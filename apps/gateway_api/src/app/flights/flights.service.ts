@@ -7,40 +7,70 @@ import { FindTicketsForm } from './domain/find-tickets.form';
 export class FlightsService {
   constructor(private readonly flightsRepo: FlightsRepo) {}
 
-  async findAvailableTickets(formData: FindTicketsForm): Promise<Flight[]> {
+  async findAvailableTickets(formData: FindTicketsForm): Promise<any> {
     const { from, to, departureDate, maxStops, returnDate } = formData;
 
-    // Получаем все рейсы из базы данных, которые происходят в эту дату из всех городов
     const flightsThere = await this.flightsRepo.getAllFlights(departureDate);
-    // console.log('THERE', flightsThere);
-
-    // Получаем все рейсы из базы данных, которые происходят в эту дату из всех городов
-    const flightsBack = await this.flightsRepo.getAllFlights(returnDate);
-    // console.log('BACK', flightsBack);
-
-    // Применяем алгоритм поиска всех возсожных маршрутов
-    const thereRoute = this.findOptimalRoute(flightsThere, from, to, maxStops);
-    const backRoute = returnDate
-      ? this.findOptimalRoute(flightsBack, to, from, maxStops)
+    const flightsBack = returnDate
+      ? await this.flightsRepo.getAllFlights(returnDate)
       : [];
-    console.log(thereRoute);
-    console.log(backRoute);
-    // Генерируем билеты на основе найденного маршрута
 
-    return thereRoute; //билеты туда и билеты обратно ( пока нет модуля с билетами - вернем просто маршруты)
+    const thereRoutes = this.findRoutes(flightsThere, from, to, maxStops);
+    const backRoutes = returnDate
+      ? this.findRoutes(flightsBack, to, from, maxStops)
+      : [];
+
+    console.log('Маршруты туда:', thereRoutes);
+    console.log('Маршруты обратно:', backRoutes);
+
+    // Теперь вы можете генерировать билеты на основе найденных маршрутов
+    return { there: thereRoutes, back: backRoutes };
   }
-  //тут мы ищем оптимальный маршрут ( строим граф и ...)
-  private findOptimalRoute(
+
+  private findRoutes(
     flights: Flight[],
     from: string,
     to: string,
     maxStops: number,
-  ): Flight[] {
+  ): Flight[][] {
     const graph = this.buildGraph(flights);
-    //тут должен быть алгоритм поиска в ширину по графу, который вернет все возможные
+    const queue: { city: string; path: Flight[] }[] = [];
+
+    queue.push({ city: from, path: [] });
+
+    const routes: Flight[][] = [];
+
+    while (queue.length > 0) {
+      const { city, path } = queue.shift();
+      const availableFlights = graph[city] || [];
+
+      for (const flight of availableFlights) {
+        // Проверяем, что мы не посетили этот город ранее в текущем маршруте
+        if (!path.some((visitedFlight) => visitedFlight.to === flight.to)) {
+          const newPath = [...path, flight];
+
+          if (
+            flight.to === to &&
+            this.isFlightConnectionValid(path[path.length - 1], flight)
+          ) {
+            // Достигнута конечная точка, добавляем маршрут в результат
+            routes.push(newPath);
+          }
+
+          if (newPath.length <= maxStops) {
+            // Добавляем соседний город в очередь
+            queue.push({
+              city: flight.to,
+              path: newPath,
+            });
+          }
+        }
+      }
+    }
+
+    return routes;
   }
 
-  //тут строится граф - это массив всех полетов для каждого города в эту дату
   private buildGraph(flights: Flight[]): Record<string, Flight[]> {
     const graph: Record<string, Flight[]> = {};
 
@@ -51,7 +81,22 @@ export class FlightsService {
 
       graph[flight.from].push(flight);
     });
-    console.log('Graph:', graph);
+
     return graph;
+  }
+
+  private isFlightConnectionValid(
+    arrivalFlight: Flight,
+    departureFlight: Flight,
+  ): boolean {
+    const arrivalTime = arrivalFlight?.arrival_time
+      ? new Date(arrivalFlight.arrival_time).getTime()
+      : 0; // Установим 0, если arrival_time не определено
+    const departureTime = new Date(departureFlight.departure_time).getTime();
+
+    // Убедимся, что время между прилетом и вылетом не меньше 10 минут
+    const minConnectionInterval = 10 * 60 * 1000; // 10 минут в миллисекундах
+
+    return departureTime - arrivalTime >= minConnectionInterval;
   }
 }
