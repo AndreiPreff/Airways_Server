@@ -10,9 +10,16 @@ import { UsersModule } from './app/users/users.module';
 import { JwtAuthGuard } from 'libs/security/guards/jwt-auth.guard';
 import { RolesGuard } from 'libs/security/guards/roles.guard';
 import { FlightsModule } from './app/flights/flights.module';
+import { TicketsModule } from './app/tickets/tickets.module';
 
 @Module({
-  imports: [PrismaModule, UsersModule, AuthModule, FlightsModule],
+  imports: [
+    PrismaModule,
+    UsersModule,
+    AuthModule,
+    FlightsModule,
+    TicketsModule,
+  ],
   controllers: [AppController],
   providers: [
     AppService,

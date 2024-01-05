@@ -13,7 +13,7 @@ export class FlightsRepo {
     const newDateFormattedString =
       endOfDayDate.toISOString().slice(0, -5) + 'Z';
 
-    return this.prisma.flight.findMany({
+    return await this.prisma.flight.findMany({
       where: {
         departure_time: {
           gte: date,
