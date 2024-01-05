@@ -22,7 +22,7 @@ export class SecurityService {
       { email: user.email, sub: user.id, role: user.role },
       {
         secret: process.env.SECRET,
-        expiresIn: '15m',
+        expiresIn: '15h',
       },
     );
     return accessToken;

@@ -10,6 +10,7 @@ import { UsersModule } from './app/users/users.module';
 import { JwtAuthGuard } from 'libs/security/guards/jwt-auth.guard';
 import { RolesGuard } from 'libs/security/guards/roles.guard';
 import { FlightsModule } from './app/flights/flights.module';
+import { OrdersModule } from './app/orders/orders.module';
 import { TicketsModule } from './app/tickets/tickets.module';
 
 @Module({
@@ -19,6 +20,7 @@ import { TicketsModule } from './app/tickets/tickets.module';
     AuthModule,
     FlightsModule,
     TicketsModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [
