@@ -15,19 +15,16 @@ export class FlightsService {
       departureDate,
       ticketsAmount,
     );
+    const thereRoutes = this.findRoutes(flightsThere, from, to, maxStops);
+
     const flightsBack = returnDate
       ? await this.flightsRepo.getAllFlights(returnDate, ticketsAmount)
       : [];
 
-    const thereRoutes = this.findRoutes(flightsThere, from, to, maxStops);
     const backRoutes = returnDate
       ? this.findRoutes(flightsBack, to, from, maxStops)
       : [];
 
-    console.log('Маршруты туда:', thereRoutes);
-    console.log('Маршруты обратно:', backRoutes);
-
-    // Теперь вы можете генерировать билеты на основе найденных маршрутов
     return { there: thereRoutes, back: backRoutes };
   }
 

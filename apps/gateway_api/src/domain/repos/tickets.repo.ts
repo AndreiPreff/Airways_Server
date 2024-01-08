@@ -23,13 +23,20 @@ export class TicketsRepo {
     });
   }
 
-  async getAllTickets(): Promise<Ticket[]> {
-    return await this.prisma.ticket.findMany();
+  async getAllOrderTickets(order: Pick<Ticket, 'orderId'>): Promise<Ticket[]> {
+    return await this.prisma.ticket.findMany({
+      where: {
+        orderId: order.orderId,
+      },
+    });
   }
 
   async updateTicket(
-    ticketData: Pick<Ticket, 'status' | 'price' | 'id'>,
+    ticketData: Pick<Ticket, 'status' | 'id'>,
   ): Promise<Ticket | null> {
+    if (ticketData.status === 'CANCELLED') {
+      return null;
+    }
     return await this.prisma.ticket.update({
       where: { id: ticketData.id },
       data: ticketData,

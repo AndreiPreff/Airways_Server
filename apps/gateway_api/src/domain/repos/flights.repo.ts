@@ -25,4 +25,23 @@ export class FlightsRepo {
       },
     });
   }
+
+  async getFlightById(flight: Pick<Flight, 'id'>): Promise<Flight> {
+    return await this.prisma.flight.findUnique({
+      where: {
+        id: flight.id,
+      },
+    });
+  }
+
+  async updateAvailableTickets(
+    flight: Pick<Flight, 'id' | 'available_tickets'>,
+  ): Promise<Flight> {
+    return await this.prisma.flight.update({
+      where: {
+        id: flight.id,
+      },
+      data: { available_tickets: flight.available_tickets },
+    });
+  }
 }

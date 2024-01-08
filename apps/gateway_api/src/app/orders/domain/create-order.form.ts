@@ -1,18 +1,18 @@
 // create-order.form.ts
 
 import { Status } from '@prisma/client';
-import { IsNumber, IsString, validate } from 'class-validator';
+import { IsOptional, IsString, IsUUID, validate } from 'class-validator';
 
 export class CreateOrderForm {
-  @IsNumber()
-  order_total: number;
-
   @IsString()
   status: Status;
 
+  @IsUUID()
+  @IsOptional()
+  id: string;
+
   static from(form?: CreateOrderForm) {
     const it = new CreateOrderForm();
-    it.order_total = form?.order_total;
     it.status = form?.status;
     return it;
   }
