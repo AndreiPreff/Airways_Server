@@ -93,6 +93,14 @@ export class TicketsService {
         id: existingTicket.orderId,
         order_total: -existingTicket.price,
       });
+      const existingFlight = await this.flightsRepo.getFlightById({
+        id: existingTicket.flightId,
+      });
+      await this.flightsRepo.updateAvailableTickets({
+        id: existingFlight.id,
+        available_tickets:
+          existingFlight.available_tickets + existingTicket.amount,
+      });
     }
 
     return updatedTicket;

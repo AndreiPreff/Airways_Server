@@ -18,4 +18,28 @@ export class FlightsController {
       return { success: false, error: error.message };
     }
   }
+
+  @Public()
+  @Post('/available-tickets-sorted-by-price')
+  async getAvailableTicketsSortedByPrice(@Body() formData: FindTicketsForm) {
+    try {
+      const availableTickets =
+        await this.flightsService.findAvailableTicketsSortedByPrice(formData);
+      return { success: true, data: availableTickets };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  @Public()
+  @Post('/available-tickets-sorted-by-time')
+  async getAvailableTicketsSortedByTime(@Body() formData: FindTicketsForm) {
+    try {
+      const availableTickets =
+        await this.flightsService.findAvailableTicketsSortedByTime(formData);
+      return { success: true, data: availableTickets };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
 }

@@ -34,9 +34,6 @@ export class TicketsRepo {
   async updateTicket(
     ticketData: Pick<Ticket, 'status' | 'id'>,
   ): Promise<Ticket | null> {
-    if (ticketData.status === 'CANCELLED') {
-      return null;
-    }
     return await this.prisma.ticket.update({
       where: { id: ticketData.id },
       data: ticketData,

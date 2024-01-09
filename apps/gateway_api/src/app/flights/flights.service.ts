@@ -7,6 +7,28 @@ import { FindTicketsForm } from './domain/find-tickets.form';
 export class FlightsService {
   constructor(private readonly flightsRepo: FlightsRepo) {}
 
+  async findAvailableTicketsSortedByPrice(
+    formData: FindTicketsForm,
+  ): Promise<any> {
+    const tickets = await this.findAvailableTickets(formData);
+
+    const sortedThereRoutes = this.sortRoutesByTotalPrice(tickets.thereRoutes);
+    const sortedBackRoutes = this.sortRoutesByTotalPrice(tickets.backRoutes);
+
+    return { there: sortedThereRoutes, back: sortedBackRoutes };
+  }
+
+  async findAvailableTicketsSortedByTime(
+    formData: FindTicketsForm,
+  ): Promise<any> {
+    const tickets = await this.findAvailableTickets(formData);
+
+    const sortedThereRoutes = this.sortRoutesByTotalTime(tickets.thereRoutes);
+    const sortedBackRoutes = this.sortRoutesByTotalTime(tickets.backRoutes);
+
+    return { there: sortedThereRoutes, back: sortedBackRoutes };
+  }
+
   async findAvailableTickets(formData: FindTicketsForm): Promise<any> {
     const { from, to, departureDate, maxStops, returnDate, ticketsAmount } =
       formData;
@@ -46,20 +68,24 @@ export class FlightsService {
       const availableFlights = graph[city] || [];
 
       for (const flight of availableFlights) {
-        // Проверяем, что мы не посетили этот город ранее в текущем маршруте
-        if (!path.some((visitedFlight) => visitedFlight.to === flight.to)) {
+        const visitedTo = path.some(
+          (visitedFlight) => visitedFlight.to === flight.to,
+        );
+        const visitedFrom = path.some(
+          (visitedFlight) => visitedFlight.from === flight.from,
+        );
+
+        if (!visitedTo && !visitedFrom) {
           const newPath = [...path, flight];
 
           if (
             flight.to === to &&
-            this.isFlightConnectionValid(path[path.length - 1], flight)
+            this.isFlightConnectionValid(path[path.length - 1], flight, path)
           ) {
-            // Достигнута конечная точка, добавляем маршрут в результат
             routes.push(newPath);
           }
 
           if (newPath.length <= maxStops) {
-            // Добавляем соседний город в очередь
             queue.push({
               city: flight.to,
               path: newPath,
@@ -89,15 +115,61 @@ export class FlightsService {
   private isFlightConnectionValid(
     arrivalFlight: Flight,
     departureFlight: Flight,
+    path: Flight[],
   ): boolean {
     const arrivalTime = arrivalFlight?.arrival_time
       ? new Date(arrivalFlight.arrival_time).getTime()
-      : 0; // Установим 0, если arrival_time не определено
+      : 0;
     const departureTime = new Date(departureFlight.departure_time).getTime();
 
-    // Убедимся, что время между прилетом и вылетом не меньше 10 минут
-    const minConnectionInterval = 10 * 60 * 1000; // 10 минут в миллисекундах
+    const minConnectionInterval = 10 * 60 * 1000;
 
-    return departureTime - arrivalTime >= minConnectionInterval;
+    if (departureTime - arrivalTime < minConnectionInterval) {
+      return false;
+    }
+
+    for (let i = 0; i < path.length - 1; i++) {
+      const currentArrivalTime = new Date(path[i].arrival_time).getTime();
+      const nextDepartureTime = new Date(path[i + 1].departure_time).getTime();
+
+      if (nextDepartureTime - currentArrivalTime < minConnectionInterval) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private sortRoutesByTotalPrice(routes: Flight[][]): Flight[][] {
+    return routes
+      .map((route) => ({
+        route,
+        total_price: route.reduce((total, flight) => total + flight.price, 0),
+      }))
+      .sort((a, b) => a.total_price - b.total_price)
+      .map((result) => result.route);
+  }
+
+  private sortRoutesByTotalTime(routes: Flight[][]): Flight[][] {
+    return routes
+      .map((route) => ({
+        route,
+        total_time: this.calculateTotalTime(route),
+      }))
+      .sort((a, b) => a.total_time - b.total_time)
+      .map((result) => result.route);
+  }
+
+  private calculateTotalTime(route: Flight[]): number {
+    if (route.length === 0) {
+      return 0;
+    }
+
+    const firstDepartureTime = new Date(route[0].departure_time).getTime();
+    const lastArrivalTime = new Date(
+      route[route.length - 1].arrival_time,
+    ).getTime();
+
+    return lastArrivalTime - firstDepartureTime;
   }
 }
