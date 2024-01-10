@@ -7,24 +7,22 @@ import { FindTicketsForm } from './domain/find-tickets.form';
 export class FlightsService {
   constructor(private readonly flightsRepo: FlightsRepo) {}
 
-  async findAvailableTicketsSortedByPrice(
-    formData: FindTicketsForm,
-  ): Promise<any> {
-    const tickets = await this.findAvailableTickets(formData);
-
-    const sortedThereRoutes = this.sortRoutesByTotalPrice(tickets.thereRoutes);
-    const sortedBackRoutes = this.sortRoutesByTotalPrice(tickets.backRoutes);
+  async findAvailableTicketsSortedByPrice(routes: {
+    there: Flight[][];
+    back: Flight[][];
+  }): Promise<any> {
+    const sortedThereRoutes = this.sortRoutesByTotalPrice(routes.there);
+    const sortedBackRoutes = this.sortRoutesByTotalPrice(routes.back);
 
     return { there: sortedThereRoutes, back: sortedBackRoutes };
   }
 
-  async findAvailableTicketsSortedByTime(
-    formData: FindTicketsForm,
-  ): Promise<any> {
-    const tickets = await this.findAvailableTickets(formData);
-
-    const sortedThereRoutes = this.sortRoutesByTotalTime(tickets.thereRoutes);
-    const sortedBackRoutes = this.sortRoutesByTotalTime(tickets.backRoutes);
+  async findAvailableTicketsSortedByTime(routes: {
+    there: Flight[][];
+    back: Flight[][];
+  }): Promise<any> {
+    const sortedThereRoutes = this.sortRoutesByTotalTime(routes.there);
+    const sortedBackRoutes = this.sortRoutesByTotalTime(routes.back);
 
     return { there: sortedThereRoutes, back: sortedBackRoutes };
   }
