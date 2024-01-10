@@ -37,9 +37,19 @@ export class OrdersController {
     const tickets = await this.ordersService.getAllOrderTickets({
       id: orderId,
     });
-    console.log(tickets);
     return tickets;
     // return TicketDto.fromEntities(tickets)!;
+  }
+
+  @Roles(Role.MANAGER, Role.USER)
+  @Get()
+  async getAllOrders(
+    @CurrentUser() currentUser: UserSessionDto,
+  ): Promise<OrderDto[]> {
+    const orders = await this.ordersService.getAllOrders({
+      userId: currentUser.sub,
+    });
+    return OrderDto.fromEntities(orders)!;
   }
 
   @Roles(Role.MANAGER, Role.USER)

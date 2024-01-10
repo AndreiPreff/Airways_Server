@@ -13,10 +13,7 @@ export class AuthService {
   ) {}
 
   async authenticate(user: Pick<User, 'email' | 'role' | 'id'>) {
-    const [accessToken, refreshToken] = await Promise.all([
-      this.securityService.getAccessToken(user),
-      this.securityService.getAndSaveRefreshToken(user),
-    ]);
+    const [accessToken, refreshToken] = await this.generateTokens(user);
     return {
       access_token: accessToken,
       refresh_token: refreshToken,
@@ -28,8 +25,8 @@ export class AuthService {
     return this.securityService.comparePasswords(formPassword, user.password);
   }
 
-  async logout(userId: string) {
-    return this.usersRepo.update(userId, { refreshToken: null });
+  async logout(user: Pick<User, 'id'>) {
+    return this.usersRepo.update(user.id, { refreshToken: null });
   }
 
   async compareRefreshTokens(refreshToken: string, user: User) {
@@ -37,5 +34,14 @@ export class AuthService {
       refreshToken,
       user.refreshToken,
     );
+  }
+
+  private async generateTokens(user: Pick<User, 'email' | 'role' | 'id'>) {
+    const [accessToken, refreshToken] = await Promise.all([
+      this.securityService.getAccessToken(user),
+      this.securityService.getAndSaveRefreshToken(user),
+    ]);
+
+    return [accessToken, refreshToken];
   }
 }

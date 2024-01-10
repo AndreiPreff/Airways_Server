@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Status, Ticket } from '@prisma/client';
+import { PrismaService } from 'libs/prisma/prisma.service';
 import { FlightsRepo } from '../../domain/repos/flights.repo';
 import { OrdersRepo } from '../../domain/repos/orders.repo';
 import { TicketsRepo } from '../../domain/repos/tickets.repo';
@@ -15,64 +16,67 @@ export class TicketsService {
     private readonly ticketsRepo: TicketsRepo,
     private readonly ordersRepo: OrdersRepo,
     private readonly flightsRepo: FlightsRepo,
+    private readonly prisma: PrismaService,
   ) {}
 
   async createTicketWithOrder(
     tickets: CreateTicketForm[],
     userId: string,
   ): Promise<Ticket[]> {
-    const order = await this.ordersRepo.createOrder({ userId });
+    return this.prisma.$transaction(async () => {
+      const order = await this.ordersRepo.createOrder({ userId });
 
-    const createdTickets = await Promise.all(
-      tickets.map(async (ticketData) => {
-        const flight = await this.flightsRepo.getFlightById({
-          id: ticketData.flightId,
-        });
-
-        if (!flight) {
-          throw new NotFoundException(
-            `Flight with id ${ticketData.flightId} not found`,
-          );
-        }
-
-        try {
-          const ticket = await this.ticketsRepo.createTicket({
-            status: 'BOOKED',
-            price: flight.price * ticketData.amount,
-            flightId: flight.id,
-            amount: ticketData.amount,
-            orderId: order.id,
-          });
-
-          await this.flightsRepo.updateAvailableTickets({
+      const createdTickets = await Promise.all(
+        tickets.map(async (ticketData) => {
+          const flight = await this.flightsRepo.getFlightById({
             id: ticketData.flightId,
-            available_tickets: flight.available_tickets - ticketData.amount,
           });
 
-          return ticket;
-        } catch (error) {
-          throw new BadRequestException({
-            statusCode: 400,
-            error: 'Bad Request',
-            message: [
-              `Error creating ticket for flight ${ticketData.flightId}`,
-            ],
-          });
-        }
-      }),
-    );
+          if (!flight) {
+            throw new NotFoundException(
+              `Flight with id ${ticketData.flightId} not found`,
+            );
+          }
 
-    const orderTotal = createdTickets.reduce(
-      (total, ticket) => total + ticket.price,
-      0,
-    );
+          try {
+            const ticket = await this.ticketsRepo.createTicket({
+              status: 'BOOKED',
+              price: flight.price * ticketData.amount,
+              flightId: flight.id,
+              amount: ticketData.amount,
+              orderId: order.id,
+            });
 
-    await this.ordersRepo.updateOrder({
-      id: order.id,
-      order_total: orderTotal,
+            await this.flightsRepo.updateAvailableTickets({
+              id: ticketData.flightId,
+              available_tickets: flight.available_tickets - ticketData.amount,
+            });
+
+            return ticket;
+          } catch (error) {
+            throw new BadRequestException({
+              statusCode: 400,
+              error: 'Bad Request',
+              message: [
+                `Error creating ticket for flight ${ticketData.flightId}`,
+              ],
+            });
+          }
+        }),
+      );
+
+      const orderTotal = createdTickets.reduce(
+        (total, ticket) => total + ticket.price,
+        0,
+      );
+
+      await this.ordersRepo.updateOrder({
+        id: order.id,
+        order_total: orderTotal,
+      });
+
+      return createdTickets;
     });
-
-    return createdTickets;
   }
 
   async getTicketById(ticketId: string): Promise<Ticket | null> {

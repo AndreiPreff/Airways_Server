@@ -66,7 +66,7 @@ export class TicketsController {
     @Body() body: CreateTicketForm,
   ): Promise<TicketDto | null> {
     const form = CreateTicketForm.from(body);
-    const errors = await CreateTicketForm.validate(form);
+    const errors = CreateTicketForm.validate(form);
 
     if (errors) {
       throw new BadRequestException(errors);

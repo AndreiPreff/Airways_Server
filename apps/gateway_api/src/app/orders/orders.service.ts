@@ -22,6 +22,10 @@ export class OrdersService {
     return TicketDto.fromEntities(tickets) || [];
   }
 
+  async getAllOrders(order: Pick<Order, 'userId'>) {
+    return await this.ordersRepo.getAllOrders(order);
+  }
+
   async updateOrderStatus(order: Pick<Order, 'id' | 'status'>) {
     const updatedOrder = await this.ordersRepo.updateOrderStatus(order);
 
