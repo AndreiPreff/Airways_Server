@@ -8,18 +8,12 @@ import { FlightsService } from './flights.service';
 export class FlightsController {
   constructor(private readonly flightsService: FlightsService) {}
 
-  private cachedRoutes: { there: Flight[][]; back: Flight[][] } = {
-    there: [],
-    back: [],
-  };
-
   @Public()
   @Post('/available-tickets')
   async getAvailableTickets(@Body() formData: FindTicketsForm) {
     try {
       const availableTickets =
         await this.flightsService.findAvailableTickets(formData);
-      this.cachedRoutes = availableTickets;
       return { success: true, data: availableTickets };
     } catch (error) {
       return { success: false, error: error.message };
@@ -28,13 +22,13 @@ export class FlightsController {
 
   @Public()
   @Post('/sort-by-price')
-  async getAvailableTicketsSortedByPrice() {
+  async getAvailableTicketsSortedByPrice(
+    @Body() routes: { there: Flight[][]; back: Flight[][] },
+  ) {
     try {
-      const sortedRoutes =
-        await this.flightsService.findAvailableTicketsSortedByPrice(
-          this.cachedRoutes,
-        );
-      return { success: true, data: sortedRoutes };
+      const availableTickets =
+        await this.flightsService.findAvailableTicketsSortedByPrice(routes);
+      return { success: true, data: availableTickets };
     } catch (error) {
       return { success: false, error: error.message };
     }
@@ -42,13 +36,13 @@ export class FlightsController {
 
   @Public()
   @Post('/sort-by-time')
-  async getAvailableTicketsSortedByTime() {
+  async getAvailableTicketsSortedByTime(
+    @Body() routes: { there: Flight[][]; back: Flight[][] },
+  ) {
     try {
-      const sortedRoutes =
-        await this.flightsService.findAvailableTicketsSortedByTime(
-          this.cachedRoutes,
-        );
-      return { success: true, data: sortedRoutes };
+      const availableTickets =
+        await this.flightsService.findAvailableTicketsSortedByTime(routes);
+      return { success: true, data: availableTickets };
     } catch (error) {
       return { success: false, error: error.message };
     }
