@@ -21,29 +21,29 @@ export class UsersService {
     return this.usersRepo.findAll();
   }
 
-  async findById(userId: string) {
-    return this.usersRepo.findById(userId);
+  async findById(user: Pick<User, 'id'>) {
+    return this.usersRepo.findById(user);
   }
 
-  async findByEmail(email: string) {
-    return this.usersRepo.findByEmail(email);
+  async findByEmail(user: Pick<User, 'email'>) {
+    return this.usersRepo.findByEmail(user);
   }
 
-  async update(userId: string, user: Partial<User>) {
+  async update(user: Pick<User, 'id' | 'password' | 'refreshToken'>) {
     if (user.password) {
       const hashedPassword = await bcrypt.hash(user.password, 10);
       user.password = hashedPassword;
       user.refreshToken = null;
     }
-    return this.usersRepo.update(userId, user);
+    return this.usersRepo.update(user);
   }
 
-  async delete(userId: string) {
-    return this.usersRepo.delete(userId);
+  async delete(user: Pick<User, 'id'>) {
+    return this.usersRepo.delete(user);
   }
 
-  async resetPassword(user: User, newPassword: string) {
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await this.usersRepo.update(user.id, { password: hashedPassword });
+  async resetPassword(user: Pick<User, 'id' | 'password'>) {
+    const hashedPassword = await bcrypt.hash(user.password, 10);
+    await this.usersRepo.update({ id: user.id, password: hashedPassword });
   }
 }

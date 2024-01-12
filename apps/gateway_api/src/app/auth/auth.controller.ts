@@ -36,7 +36,9 @@ export class AuthController {
     if (errors) {
       throw new BadRequestException();
     }
-    const userExists = await this.usersService.findByEmail(body.email);
+    const userExists = await this.usersService.findByEmail({
+      email: body.email,
+    });
     if (userExists) {
       throw new ConflictException(
         'A user with the provided email already exists.',
@@ -58,7 +60,7 @@ export class AuthController {
       throw new BadRequestException();
     }
 
-    const user = await this.usersService.findByEmail(form.email);
+    const user = await this.usersService.findByEmail({ email: form.email });
     if (!user) throw new NotFoundException('User not found');
 
     const isValid = await this.authService.comparePasswords(
@@ -73,15 +75,15 @@ export class AuthController {
 
   @Post('logout')
   async logout(@CurrentUser() currentUser: UserSessionDto) {
-    await this.authService.logout({ id: currentUser.sub });
-    return;
+    await this.authService.logout({ id: currentUser.sub, refreshToken: null });
+    return true;
   }
 
   @Public()
   @UseGuards(RefreshTokenGuard)
   @Get('refresh')
   async refreshTokens(@CurrentUser() currentUser: UserSessionDto) {
-    const user = await this.usersService.findById(currentUser.sub);
+    const user = await this.usersService.findById({ id: currentUser.sub });
     if (!user) {
       throw new HttpException('User not found', HttpStatus.FORBIDDEN);
     }
@@ -112,12 +114,15 @@ export class AuthController {
     if (errors) {
       throw new BadRequestException('Validation failed');
     }
-    const user = await this.usersService.findByEmail(body.email);
+    const user = await this.usersService.findByEmail({ email: body.email });
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    await this.usersService.resetPassword(user, form.password);
+    await this.usersService.resetPassword({
+      id: user.id,
+      password: form.password,
+    });
 
     return { message: 'Password reset successfully' };
   }

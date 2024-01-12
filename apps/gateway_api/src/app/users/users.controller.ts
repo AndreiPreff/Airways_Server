@@ -25,7 +25,7 @@ export class UsersController {
   @Roles(Role.USER)
   @Get('/profile')
   async findUser(@CurrentUser() currentUser: UserSessionDto) {
-    const user = await this.usersService.findById(currentUser.sub);
+    const user = await this.usersService.findById({ id: currentUser.sub });
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -35,7 +35,7 @@ export class UsersController {
   @Roles(Role.ADMIN)
   @Get(':userId')
   async findById(@Param('userId') userId: string) {
-    const user = await this.usersService.findById(userId);
+    const user = await this.usersService.findById({ id: userId });
     if (!user) {
       throw new NotFoundException(
         `User with the id of ${userId} does not exist.`,
@@ -59,7 +59,7 @@ export class UsersController {
     if (errors) {
       throw new BadRequestException();
     }
-    const entity = await this.usersService.update(userId, form);
+    const entity = await this.usersService.update({ id: userId, ...form });
     if (!entity) {
       throw new ConflictException();
     }
@@ -69,7 +69,7 @@ export class UsersController {
   @Roles(Role.ADMIN)
   @Delete(':userId')
   async delete(@Param('userId') userId: string) {
-    const entity = await this.usersService.delete(userId);
+    const entity = await this.usersService.delete({ id: userId });
     if (!entity) {
       throw new ConflictException();
     }

@@ -25,8 +25,8 @@ export class AuthService {
     return this.securityService.comparePasswords(formPassword, user.password);
   }
 
-  async logout(user: Pick<User, 'id'>) {
-    return this.usersRepo.update(user.id, { refreshToken: null });
+  async logout(user: Pick<User, 'id' | 'refreshToken'>) {
+    return this.usersRepo.update(user);
   }
 
   async compareRefreshTokens(refreshToken: string, user: User) {

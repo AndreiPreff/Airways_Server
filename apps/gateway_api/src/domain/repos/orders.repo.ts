@@ -15,6 +15,15 @@ export class OrdersRepo {
     return await this.prisma.order.create({ data: orderData });
   }
 
+  async getOrderById(order: Pick<Order, 'userId' | 'id'>) {
+    return await this.prisma.order.findUnique({
+      where: {
+        id: order.id,
+        userId: order.userId,
+      },
+    });
+  }
+
   async updateOrder(order: Pick<Order, 'id' | 'order_total'>) {
     return await this.prisma.order.update({
       where: {
@@ -29,7 +38,15 @@ export class OrdersRepo {
   }
 
   async updateOrderStatus(order: Pick<Order, 'id' | 'status'>) {
-    return await this.prisma.order.update({
+    const existingOrder = await this.prisma.order.findUnique({
+      where: {
+        id: order.id,
+      },
+    });
+    if (existingOrder.status === 'CANCELLED') {
+      return null;
+    }
+    const updatedOrder = await this.prisma.order.update({
       where: {
         id: order.id,
       },
@@ -37,6 +54,18 @@ export class OrdersRepo {
         status: order.status,
       },
     });
+    if (order.status === 'CANCELLED') {
+      await this.prisma.order.update({
+        where: {
+          id: order.id,
+        },
+        data: {
+          order_total: 0,
+        },
+      });
+    }
+
+    return updatedOrder;
   }
 
   async getAllOrders(order: Pick<Order, 'userId'>) {

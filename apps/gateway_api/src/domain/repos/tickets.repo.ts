@@ -7,10 +7,7 @@ export class TicketsRepo {
   constructor(private readonly prisma: PrismaService) {}
 
   async createTicket(
-    ticketData: Pick<
-      Ticket,
-      'status' | 'price' | 'flightId' | 'orderId' | 'amount'
-    >,
+    ticketData: Pick<Ticket, 'status' | 'price' | 'flightId' | 'orderId'>,
   ): Promise<Ticket> {
     return await this.prisma.ticket.create({
       data: ticketData,
@@ -40,9 +37,9 @@ export class TicketsRepo {
     });
   }
 
-  async deleteTicket(ticketId: string): Promise<Ticket | null> {
+  async deleteTicket(ticket: Pick<Ticket, 'id'>): Promise<Ticket | null> {
     return await this.prisma.ticket.delete({
-      where: { id: ticketId },
+      where: { id: ticket.id },
     });
   }
 }

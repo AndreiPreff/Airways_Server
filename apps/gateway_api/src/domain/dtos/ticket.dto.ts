@@ -36,7 +36,6 @@ export class TicketDto extends UUIDDto {
     if (!entities?.map) {
       return undefined;
     }
-
     return entities.map((entity) => this.fromEntity(entity)!);
   }
 }

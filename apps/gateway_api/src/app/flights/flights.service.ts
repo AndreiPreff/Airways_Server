@@ -31,21 +31,28 @@ export class FlightsService {
     const { from, to, departureDate, maxStops, returnDate, ticketsAmount } =
       formData;
 
-    const flightsThere = await this.flightsRepo.getAllFlights(
-      departureDate,
-      ticketsAmount,
-    );
+    const flightsThere = await this.flightsRepo.getAllFlights({
+      departure_time: departureDate,
+      available_tickets: ticketsAmount,
+    });
     const thereRoutes = this.findRoutes(flightsThere, from, to, maxStops);
 
+    const thereRoutesSorted = this.sortRoutesByTotalPrice(thereRoutes);
+
     const flightsBack = returnDate
-      ? await this.flightsRepo.getAllFlights(returnDate, ticketsAmount)
+      ? await this.flightsRepo.getAllFlights({
+          departure_time: returnDate,
+          available_tickets: ticketsAmount,
+        })
       : [];
 
     const backRoutes = returnDate
       ? this.findRoutes(flightsBack, to, from, maxStops)
       : [];
 
-    return { there: thereRoutes, back: backRoutes };
+    const backRoutesSorted = this.sortRoutesByTotalPrice(backRoutes);
+
+    return { there: thereRoutesSorted, back: backRoutesSorted };
   }
 
   private findRoutes(

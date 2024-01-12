@@ -6,8 +6,10 @@ import { PrismaService } from 'libs/prisma/prisma.service';
 export class FlightsRepo {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getAllFlights(date: Date, ticketsAmount: number): Promise<Flight[]> {
-    const originalDate = new Date(date);
+  async getAllFlights(
+    flight: Pick<Flight, 'departure_time' | 'available_tickets'>,
+  ): Promise<Flight[]> {
+    const originalDate = new Date(flight.departure_time);
     const endOfDayDate = new Date(originalDate);
     endOfDayDate.setUTCHours(23, 59, 59, 999);
     const newDateFormattedString =
@@ -16,11 +18,11 @@ export class FlightsRepo {
     return await this.prisma.flight.findMany({
       where: {
         departure_time: {
-          gte: date,
+          gte: flight.departure_time,
           lte: newDateFormattedString,
         },
         available_tickets: {
-          gte: ticketsAmount,
+          gte: flight.available_tickets,
         },
       },
     });

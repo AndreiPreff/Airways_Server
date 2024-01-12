@@ -37,7 +37,8 @@ export class SecurityService {
       },
     );
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 8);
-    await this.usersRepo.update(user.id, {
+    await this.usersRepo.update({
+      id: user.id,
       refreshToken: hashedRefreshToken,
     });
     return refreshToken;

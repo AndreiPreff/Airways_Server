@@ -19,33 +19,33 @@ export class UsersRepo {
     return await this.prisma.user.findMany();
   }
 
-  async findById(userId: string) {
+  async findById(user: Pick<User, 'id'>) {
     return await this.prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: user.id },
     });
   }
 
-  async findByEmail(email: string) {
+  async findByEmail(user: Pick<User, 'email'>) {
     return await this.prisma.user.findUnique({
-      where: { email: email },
+      where: { email: user.email },
     });
   }
 
-  async update(userId: string, user: Partial<User>) {
+  async update(user: Partial<User>) {
     return await this.prisma.user.update({
-      where: { id: userId },
+      where: { id: user.id },
       data: user,
     });
   }
 
-  async delete(userId: string) {
-    return await this.prisma.user.delete({ where: { id: userId } });
+  async delete(user: Pick<User, 'id'>) {
+    return await this.prisma.user.delete({ where: { id: user.id } });
   }
 
-  async updatePassword(userId: string, password: string) {
+  async updatePassword(user: Pick<User, 'id' | 'password'>) {
     return await this.prisma.user.update({
-      where: { id: userId },
-      data: { password },
+      where: { id: user.id },
+      data: { password: user.password },
     });
   }
 }

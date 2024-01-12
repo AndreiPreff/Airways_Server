@@ -8,12 +8,13 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { Role, Ticket } from '@prisma/client';
+import { Role } from '@prisma/client';
 import { CurrentUser } from 'libs/security/decorators/current-user.decorator';
 import { Roles } from 'libs/security/decorators/roles.decorator';
 import { TicketDto } from '../../domain/dtos/ticket.dto';
 import { UserSessionDto } from '../../domain/dtos/user-session.dto';
 import { CreateTicketForm } from './domain/create-ticket.form';
+import { UpdateTicketForm } from './domain/update-ticket.form';
 import { TicketsService } from './tickets.service';
 
 @Controller('tickets')
@@ -23,12 +24,12 @@ export class TicketsController {
   @Roles(Role.MANAGER, Role.USER)
   @Post()
   async createTicket(
-    @Body() body: CreateTicketForm | CreateTicketForm[],
+    @Body() body: CreateTicketForm[],
     @CurrentUser() currentUser: UserSessionDto,
-  ): Promise<TicketDto | TicketDto[]> {
-    const forms = Array.isArray(body)
-      ? body.map(CreateTicketForm.from)
-      : [CreateTicketForm.from(body)];
+  ): Promise<TicketDto[]> {
+    const forms = body.map(({ amount, flightId }) =>
+      CreateTicketForm.from({ amount, flightId }),
+    );
 
     const errors = await Promise.all(
       forms.map((form) => CreateTicketForm.validate(form)),
@@ -45,9 +46,7 @@ export class TicketsController {
       currentUser.sub,
     );
 
-    return Array.isArray(body)
-      ? createdTickets.map((ticket) => TicketDto.fromEntity(ticket)!)
-      : TicketDto.fromEntity(createdTickets[0])!;
+    return TicketDto.fromEntities(createdTickets);
   }
 
   @Roles(Role.MANAGER, Role.USER)
@@ -55,7 +54,7 @@ export class TicketsController {
   async getTicketById(
     @Param('id') ticketId: string,
   ): Promise<TicketDto | null> {
-    const ticket = await this.ticketsService.getTicketById(ticketId);
+    const ticket = await this.ticketsService.getTicketById({ id: ticketId });
     return TicketDto.fromEntity(ticket);
   }
 
@@ -63,26 +62,28 @@ export class TicketsController {
   @Patch(':id')
   async updateTicket(
     @Param('id') ticketId: string,
-    @Body() body: CreateTicketForm,
+    @Body() body: UpdateTicketForm,
   ): Promise<TicketDto | null> {
-    const form = CreateTicketForm.from(body);
-    const errors = CreateTicketForm.validate(form);
+    const form = UpdateTicketForm.from(body);
+    const errors = UpdateTicketForm.validate(form);
 
     if (errors) {
       throw new BadRequestException(errors);
     }
 
-    const updatedTicket = await this.ticketsService.updateTicket(
-      ticketId,
-      form as Pick<Ticket, 'status'>,
-    );
+    const updatedTicket = await this.ticketsService.updateTicket({
+      id: ticketId,
+      status: form.status,
+    });
     return TicketDto.fromEntity(updatedTicket)!;
   }
 
   @Roles(Role.MANAGER)
   @Delete(':id')
   async deleteTicket(@Param('id') ticketId: string): Promise<TicketDto | null> {
-    const deletedTicket = await this.ticketsService.deleteTicket(ticketId);
+    const deletedTicket = await this.ticketsService.deleteTicket({
+      id: ticketId,
+    });
     return TicketDto.fromEntity(deletedTicket)!;
   }
 }

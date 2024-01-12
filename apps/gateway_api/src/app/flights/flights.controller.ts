@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
 import { Flight } from '@prisma/client';
 import { Public } from 'libs/security/decorators/public.decorator';
 import { FindTicketsForm } from './domain/find-tickets.form';
@@ -11,9 +11,14 @@ export class FlightsController {
   @Public()
   @Post('/available-tickets')
   async getAvailableTickets(@Body() formData: FindTicketsForm) {
+    const form = FindTicketsForm.from(formData);
+    const errors = await FindTicketsForm.validate(form);
+    if (errors) {
+      throw new BadRequestException();
+    }
     try {
       const availableTickets =
-        await this.flightsService.findAvailableTickets(formData);
+        await this.flightsService.findAvailableTickets(form);
       return { success: true, data: availableTickets };
     } catch (error) {
       return { success: false, error: error.message };
@@ -22,9 +27,7 @@ export class FlightsController {
 
   @Public()
   @Post('/sort-by-price')
-  async getAvailableTicketsSortedByPrice(
-    @Body() routes: { there: Flight[][]; back: Flight[][] },
-  ) {
+  async sortByPrice(@Body() routes: { there: Flight[][]; back: Flight[][] }) {
     try {
       const availableTickets =
         await this.flightsService.findAvailableTicketsSortedByPrice(routes);
@@ -36,9 +39,7 @@ export class FlightsController {
 
   @Public()
   @Post('/sort-by-time')
-  async getAvailableTicketsSortedByTime(
-    @Body() routes: { there: Flight[][]; back: Flight[][] },
-  ) {
+  async sortByTime(@Body() routes: { there: Flight[][]; back: Flight[][] }) {
     try {
       const availableTickets =
         await this.flightsService.findAvailableTicketsSortedByTime(routes);

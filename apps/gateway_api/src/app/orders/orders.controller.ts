@@ -13,7 +13,7 @@ import { Roles } from 'libs/security/decorators/roles.decorator';
 import { OrderDto } from '../../domain/dtos/order.dto';
 import { TicketDto } from '../../domain/dtos/ticket.dto';
 import { UserSessionDto } from '../../domain/dtos/user-session.dto';
-import { CreateOrderForm } from './domain/create-order.form';
+import { UpdateOrderForm } from './domain/update-order.form';
 import { OrdersService } from './orders.service';
 
 @Controller('orders')
@@ -32,17 +32,16 @@ export class OrdersController {
   }
 
   @Roles(Role.MANAGER, Role.USER)
-  @Get(':id')
+  @Get('getOrderTickets/:id')
   async getAllOrderTickets(@Param('id') orderId: string): Promise<TicketDto[]> {
     const tickets = await this.ordersService.getAllOrderTickets({
       id: orderId,
     });
-    return tickets;
-    // return TicketDto.fromEntities(tickets)!;
+    return TicketDto.fromEntities(tickets)!;
   }
 
   @Roles(Role.MANAGER, Role.USER)
-  @Get()
+  @Get('getAllUserOrders')
   async getAllOrders(
     @CurrentUser() currentUser: UserSessionDto,
   ): Promise<OrderDto[]> {
@@ -53,13 +52,26 @@ export class OrdersController {
   }
 
   @Roles(Role.MANAGER, Role.USER)
+  @Get('getOrder/:id')
+  async getOrderById(
+    @Param('id') orderId: string,
+    @CurrentUser() currentUser: UserSessionDto,
+  ): Promise<OrderDto> {
+    const order = await this.ordersService.getOrder({
+      userId: currentUser.sub,
+      id: orderId,
+    });
+    return OrderDto.fromEntity(order)!;
+  }
+
+  @Roles(Role.MANAGER, Role.USER)
   @Patch(':id')
   async updateOrder(
     @Param('id') orderId: string,
-    @Body() body: CreateOrderForm,
+    @Body() body: UpdateOrderForm,
   ): Promise<OrderDto> {
-    const form = CreateOrderForm.from(body);
-    const errors = await CreateOrderForm.validate(form);
+    const form = UpdateOrderForm.from(body);
+    const errors = await UpdateOrderForm.validate(form);
 
     if (errors) {
       throw new BadRequestException(errors);

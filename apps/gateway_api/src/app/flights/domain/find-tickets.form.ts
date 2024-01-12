@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsString,
   Min,
+  validate,
 } from 'class-validator';
 
 export class FindTicketsForm {
@@ -31,4 +32,21 @@ export class FindTicketsForm {
 
   @IsNotEmpty()
   ticketsAmount: number;
+
+  static from(form?: FindTicketsForm) {
+    const it = new FindTicketsForm();
+    it.from = form?.from;
+    it.to = form?.to;
+    it.departureDate = form?.departureDate;
+    it.maxStops = form?.maxStops;
+    it.roundTrip = form?.roundTrip;
+    it.returnDate = form?.returnDate;
+    it.ticketsAmount = form?.ticketsAmount;
+    return it;
+  }
+
+  static async validate(form: FindTicketsForm) {
+    const errors = await validate(form);
+    return errors.length ? errors : false;
+  }
 }
