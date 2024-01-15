@@ -1,16 +1,37 @@
-import { IsNumber, IsUUID, validateSync } from 'class-validator';
+import {
+  ArrayMinSize,
+  IsArray,
+  IsOptional,
+  IsString,
+  validateSync,
+} from 'class-validator';
 
 export class CreateTicketForm {
-  @IsNumber()
-  amount: number;
+  @IsArray()
+  @ArrayMinSize(1, { message: 'At least one flightId must be provided' })
+  flightIdThere: string[];
 
-  @IsUUID()
-  flightId: string;
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(1, { message: 'At least one flightId must be provided' })
+  flightIdBack: string[];
+
+  @IsString()
+  passengerName: string;
+
+  @IsString()
+  passengerLastName: string;
+
+  @IsString()
+  passengerPassportNumber: string;
 
   static from(form?: CreateTicketForm) {
     const it = new CreateTicketForm();
-    it.amount = form?.amount;
-    it.flightId = form?.flightId;
+    it.flightIdThere = form?.flightIdThere;
+    it.flightIdBack = form?.flightIdBack;
+    it.passengerName = form?.passengerName;
+    it.passengerLastName = form?.passengerLastName;
+    it.passengerPassportNumber = form?.passengerPassportNumber;
     return it;
   }
 

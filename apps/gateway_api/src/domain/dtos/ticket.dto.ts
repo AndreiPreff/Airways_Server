@@ -1,5 +1,5 @@
 import { Status, Ticket } from '@prisma/client';
-import { IsEnum, IsNumber, IsUUID } from 'class-validator';
+import { IsEnum, IsNumber, IsString, IsUUID } from 'class-validator';
 import { UUIDDto } from './uuid.dto';
 
 export class TicketDto extends UUIDDto {
@@ -15,6 +15,15 @@ export class TicketDto extends UUIDDto {
   @IsUUID()
   orderId: string;
 
+  @IsString()
+  passengerName: string;
+
+  @IsString()
+  passengerLastName: string;
+
+  @IsString()
+  passengerPassportNumber: string;
+
   static fromEntity(entity?: Ticket): TicketDto | undefined {
     if (!entity) {
       return undefined;
@@ -26,6 +35,9 @@ export class TicketDto extends UUIDDto {
     dto.updatedAt = entity.updatedAt.valueOf();
     dto.status = entity.status;
     dto.price = entity.price;
+    dto.passengerName = entity.passengerName;
+    dto.passengerLastName = entity.passengerLastName;
+    dto.passengerPassportNumber = entity.passengerPassportNumber;
     dto.flightId = entity.flightId;
     dto.orderId = entity.orderId;
 

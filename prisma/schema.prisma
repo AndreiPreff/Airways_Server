@@ -22,6 +22,11 @@ enum Status {
   CANCELLED @map("cancelled")
 }
 
+enum Direction {
+  THERE @map("there")
+  BACK  @map("back")
+}
+
 model User {
   id           String   @id @default(uuid())
   createdAt    DateTime @default(now())
@@ -54,21 +59,24 @@ model Order {
 }
 
 model Ticket {
-  id                      String   @id @default(uuid())
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
+  id                      String    @id @default(uuid())
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
   status                  Status
   price                   Float
-  passangerName           String?
-  passangerLastName       String?
-  passangerPassportNumber String?
-  flight                  Flight   @relation(fields: [flightId], references: [id])
+  passengerName           String?
+  passengerLastName       String?
+  passengerPassportNumber String?
+  direction               Direction @default(THERE)
+  flight                  Flight    @relation(fields: [flightId], references: [id])
   flightId                String
-  order                   Order    @relation(fields: [orderId], references: [id])
+  order                   Order     @relation(fields: [orderId], references: [id])
   orderId                 String
 
   @@index([id])
   @@index([orderId])
+  @@index([passengerPassportNumber])
+  @@index([direction])
 }
 
 model Flight {

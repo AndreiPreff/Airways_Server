@@ -7,7 +7,17 @@ export class TicketsRepo {
   constructor(private readonly prisma: PrismaService) {}
 
   async createTicket(
-    ticketData: Pick<Ticket, 'status' | 'price' | 'flightId' | 'orderId'>,
+    ticketData: Pick<
+      Ticket,
+      | 'status'
+      | 'price'
+      | 'flightId'
+      | 'orderId'
+      | 'passengerName'
+      | 'passengerLastName'
+      | 'passengerPassportNumber'
+      | 'direction'
+    >,
   ): Promise<Ticket> {
     return await this.prisma.ticket.create({
       data: ticketData,

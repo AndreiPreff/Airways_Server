@@ -26,10 +26,8 @@ export class TicketsController {
   async createTicket(
     @Body() body: CreateTicketForm[],
     @CurrentUser() currentUser: UserSessionDto,
-  ): Promise<TicketDto[]> {
-    const forms = body.map(({ amount, flightId }) =>
-      CreateTicketForm.from({ amount, flightId }),
-    );
+  ): Promise<any> {
+    const forms = body.map((ticketData) => CreateTicketForm.from(ticketData));
 
     const errors = await Promise.all(
       forms.map((form) => CreateTicketForm.validate(form)),
@@ -43,10 +41,12 @@ export class TicketsController {
 
     const createdTickets = await this.ticketsService.createTicketWithOrder(
       forms,
-      currentUser.sub,
+      { id: currentUser.sub },
     );
 
-    return TicketDto.fromEntities(createdTickets);
+    const groupedTickets = this.ticketsService.groupTickets(createdTickets);
+
+    return groupedTickets;
   }
 
   @Roles(Role.MANAGER, Role.USER)
