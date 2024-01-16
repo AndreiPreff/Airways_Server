@@ -1,10 +1,6 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Direction, Status, Ticket, User } from '@prisma/client';
-import { Pick } from '@prisma/client/runtime/library';
+import { Pick, Record } from '@prisma/client/runtime/library';
 import { PrismaService } from 'libs/prisma/prisma.service';
 import { FlightsRepo } from '../../domain/repos/flights.repo';
 import { OrdersRepo } from '../../domain/repos/orders.repo';
@@ -23,110 +19,84 @@ export class TicketsService {
   async createTicketWithOrder(
     tickets: CreateTicketForm[],
     user: Pick<User, 'id'>,
-  ): Promise<Record<string, Ticket[]>> {
-    return this.prisma.$transaction(async () => {
-      const createdTickets: Record<string, Ticket[]> = {};
+  ): Promise<Ticket[]> {
+    try {
+      return this.prisma.$executeRaw`BEGIN;`.then(async () => {
+        const createdTickets: Ticket[] = [];
+        const orderTotal: Ticket[] = [];
 
-      try {
         const order = await this.ordersRepo.createOrder({
           userId: user.id,
         });
 
-        const orderTotal = await Promise.all(
-          tickets.map(async (ticketData) => {
-            const flightIdsThere = ticketData.flightIdThere;
-            const flightIdsBack = ticketData.flightIdBack || [];
+        for (const ticketData of tickets) {
+          const flightIdsThere = ticketData.flightIdThere;
+          const flightIdsBack = ticketData.flightIdBack || null;
 
-            const ticketsThere = await Promise.all(
-              flightIdsThere.map(async (flightIdThere) => {
-                const flightThere = await this.flightsRepo.getFlightById({
-                  id: flightIdThere,
-                });
+          for (const flightIdThere of flightIdsThere) {
+            const flightThere = await this.flightsRepo.getFlightById({
+              id: flightIdThere,
+            });
 
-                if (!flightThere) {
-                  throw new NotFoundException(
-                    `Flight with id ${flightIdThere} not found`,
-                  );
-                }
+            if (flightThere.available_tickets <= 0) {
+              throw new Error(
+                `No available tickets for flight ${flightThere.id}`,
+              );
+            }
 
-                try {
-                  const ticket = await this.ticketsRepo.createTicket({
-                    status: 'BOOKED',
-                    price: flightThere.price,
-                    flightId: flightThere.id,
-                    orderId: order.id,
-                    passengerName: ticketData.passengerName,
-                    passengerLastName: ticketData.passengerLastName,
-                    passengerPassportNumber: ticketData.passengerPassportNumber,
-                    direction: Direction.THERE,
-                  });
+            const ticket = await this.ticketsRepo.createTicket({
+              status: 'BOOKED',
+              price: flightThere.price,
+              flightId: flightThere.id,
+              orderId: order.id,
+              passengerName: ticketData.passengerName,
+              passengerLastName: ticketData.passengerLastName,
+              passengerPassportNumber: ticketData.passengerPassportNumber,
+              direction: Direction.THERE,
+            });
 
-                  await this.flightsRepo.updateAvailableTickets({
-                    id: flightThere.id,
-                    available_tickets: flightThere.available_tickets - 1,
-                  });
+            await this.flightsRepo.updateAvailableTickets({
+              id: flightThere.id,
+              available_tickets: flightThere.available_tickets - 1,
+            });
 
-                  return ticket;
-                } catch (error) {
-                  throw new BadRequestException({
-                    statusCode: 400,
-                    error: 'Bad Request',
-                    message: [
-                      `Error creating ticket for flight ${flightThere.id}`,
-                    ],
-                  });
-                }
-              }),
-            );
+            orderTotal.push(ticket);
+            createdTickets.push(ticket);
+          }
 
-            const ticketsBack = await Promise.all(
-              flightIdsBack.map(async (flightIdBack) => {
-                const flightBack = await this.flightsRepo.getFlightById({
-                  id: flightIdBack,
-                });
+          if (flightIdsBack) {
+            for (const flightIdBack of flightIdsBack) {
+              const flightBack = await this.flightsRepo.getFlightById({
+                id: flightIdBack,
+              });
 
-                if (!flightBack) {
-                  throw new NotFoundException(
-                    `Flight with id ${flightIdBack} not found`,
-                  );
-                }
+              if (flightBack.available_tickets <= 0) {
+                throw new Error(
+                  `No available tickets for flight ${flightBack.id}`,
+                );
+              }
 
-                try {
-                  const ticket = await this.ticketsRepo.createTicket({
-                    status: 'BOOKED',
-                    price: flightBack.price,
-                    flightId: flightBack.id,
-                    orderId: order.id,
-                    passengerName: ticketData.passengerName,
-                    passengerLastName: ticketData.passengerLastName,
-                    passengerPassportNumber: ticketData.passengerPassportNumber,
-                    direction: Direction.BACK,
-                  });
+              const ticket = await this.ticketsRepo.createTicket({
+                status: 'BOOKED',
+                price: flightBack.price,
+                flightId: flightBack.id,
+                orderId: order.id,
+                passengerName: ticketData.passengerName,
+                passengerLastName: ticketData.passengerLastName,
+                passengerPassportNumber: ticketData.passengerPassportNumber,
+                direction: Direction.BACK,
+              });
 
-                  await this.flightsRepo.updateAvailableTickets({
-                    id: flightBack.id,
-                    available_tickets: flightBack.available_tickets - 1,
-                  });
+              await this.flightsRepo.updateAvailableTickets({
+                id: flightBack.id,
+                available_tickets: flightBack.available_tickets - 1,
+              });
 
-                  return ticket;
-                } catch (error) {
-                  throw new BadRequestException({
-                    statusCode: 400,
-                    error: 'Bad Request',
-                    message: [
-                      `Error creating ticket for flight ${flightBack.id}`,
-                    ],
-                  });
-                }
-              }),
-            );
-
-            const allTickets = [...ticketsThere, ...ticketsBack];
-            createdTickets[ticketData.passengerPassportNumber] = allTickets;
-
-            return allTickets;
-          }),
-        );
+              orderTotal.push(ticket);
+              createdTickets.push(ticket);
+            }
+          }
+        }
 
         const flattenedTickets = orderTotal.flat();
         const total = flattenedTickets.reduce(
@@ -138,19 +108,13 @@ export class TicketsService {
           id: order.id,
           order_total: total,
         });
-
+        await this.prisma.$executeRaw`COMMIT;`;
         return createdTickets;
-      } catch (error) {
-        // Rollback the transaction in case of an error
-        await this.prisma.$queryRaw`ROLLBACK;`;
-
-        throw new BadRequestException({
-          statusCode: 400,
-          error: 'Bad Request',
-          message: ['Error creating tickets and order'],
-        });
-      }
-    });
+      });
+    } catch (error) {
+      await this.prisma.$executeRaw`ROLLBACK;`;
+      return error;
+    }
   }
 
   async getTicketById(ticket: Pick<Ticket, 'id'>): Promise<Ticket | null> {
@@ -178,7 +142,6 @@ export class TicketsService {
           available_tickets: existingFlight.available_tickets + 1,
         });
       }
-
       return updatedTicket;
     });
   }
@@ -187,22 +150,19 @@ export class TicketsService {
     return await this.ticketsRepo.deleteTicket(ticket);
   }
 
-  groupTickets(
-    tickets: Record<string, Ticket[]>,
-  ): Record<string, Record<string, Ticket[]>> {
+  groupTickets(tickets: Ticket[]): Record<string, Record<string, Ticket[]>> {
     const grouped: Record<string, Record<string, Ticket[]>> = {};
 
-    for (const passportNumber in tickets) {
-      if (Object.prototype.hasOwnProperty.call(tickets, passportNumber)) {
-        grouped[passportNumber] = {
-          THERE: [],
-          BACK: [],
-        };
+    for (const ticket of tickets) {
+      const passportNumber = ticket.passengerPassportNumber;
 
-        for (const ticket of tickets[passportNumber]) {
-          grouped[passportNumber][ticket.direction].push(ticket);
-        }
-      }
+      const passportGroup = (grouped[passportNumber] =
+        grouped[passportNumber] || {});
+
+      const directionGroup = (passportGroup[ticket.direction] =
+        passportGroup[ticket.direction] || []);
+
+      directionGroup.push({ ...ticket, orderId: undefined });
     }
 
     return grouped;

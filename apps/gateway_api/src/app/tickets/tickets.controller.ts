@@ -39,14 +39,17 @@ export class TicketsController {
       throw new BadRequestException(errors.filter((error) => error !== false));
     }
 
-    const createdTickets = await this.ticketsService.createTicketWithOrder(
-      forms,
-      { id: currentUser.sub },
-    );
+    try {
+      const createdTickets = await this.ticketsService.createTicketWithOrder(
+        forms,
+        { id: currentUser.sub },
+      );
+      const groupedTickets = this.ticketsService.groupTickets(createdTickets);
 
-    const groupedTickets = this.ticketsService.groupTickets(createdTickets);
-
-    return groupedTickets;
+      return groupedTickets;
+    } catch (error) {
+      console.error('Error creating tickets:', error);
+    }
   }
 
   @Roles(Role.MANAGER, Role.USER)

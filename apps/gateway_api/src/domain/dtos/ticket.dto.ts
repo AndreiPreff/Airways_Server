@@ -1,4 +1,4 @@
-import { Status, Ticket } from '@prisma/client';
+import { Direction, Status, Ticket } from '@prisma/client';
 import { IsEnum, IsNumber, IsString, IsUUID } from 'class-validator';
 import { UUIDDto } from './uuid.dto';
 
@@ -14,6 +14,9 @@ export class TicketDto extends UUIDDto {
 
   @IsUUID()
   orderId: string;
+
+  @IsEnum(Direction)
+  direction: string;
 
   @IsString()
   passengerName: string;
