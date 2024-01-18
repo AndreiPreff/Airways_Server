@@ -15,11 +15,11 @@ export class OrdersRepo {
     return await this.prisma.order.create({ data: orderData });
   }
 
-  async getOrderById(order: Pick<Order, 'userId' | 'id'>) {
-    return await this.prisma.order.findUnique({
+  async getOrderById(order: Pick<Order, 'userId'>) {
+    return await this.prisma.order.findMany({
       where: {
-        id: order.id,
         userId: order.userId,
+        status: 'BOOKED',
       },
     });
   }

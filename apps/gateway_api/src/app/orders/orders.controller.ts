@@ -52,16 +52,15 @@ export class OrdersController {
   }
 
   @Roles(Role.MANAGER, Role.USER)
-  @Get('getOrder/:id')
+  @Get('getBookedOrders')
   async getOrderById(
     @Param('id') orderId: string,
     @CurrentUser() currentUser: UserSessionDto,
-  ): Promise<OrderDto> {
-    const order = await this.ordersService.getOrder({
+  ): Promise<OrderDto[]> {
+    const orders = await this.ordersService.getOrders({
       userId: currentUser.sub,
-      id: orderId,
     });
-    return OrderDto.fromEntity(order)!;
+    return OrderDto.fromEntities(orders)!;
   }
 
   @Roles(Role.MANAGER, Role.USER)

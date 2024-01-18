@@ -27,7 +27,7 @@ export class OrdersService {
   async getAllOrders(order: Pick<Order, 'userId'>) {
     return await this.ordersRepo.getAllOrders(order);
   }
-  async getOrder(order: Pick<Order, 'userId' | 'id'>) {
+  async getOrders(order: Pick<Order, 'userId'>) {
     return await this.ordersRepo.getOrderById(order);
   }
 
