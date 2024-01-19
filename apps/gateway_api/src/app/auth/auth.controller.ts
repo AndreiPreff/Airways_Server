@@ -10,6 +10,15 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiBadRequestResponse,
+  ApiConflictResponse,
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiTags,
+  ApiOperation,
+} from '@nestjs/swagger';
 
 import { UsersService } from 'apps/gateway_api/src/app/users/users.service';
 import { UserSessionDto } from 'apps/gateway_api/src/domain/dtos/user-session.dto';
@@ -21,6 +30,7 @@ import { AuthService } from './auth.service';
 import { LoginForm } from './domain/login.form';
 import { ResetPasswordForm } from './domain/reset-password.form';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -28,6 +38,10 @@ export class AuthController {
     private readonly usersService: UsersService,
   ) {}
 
+  @ApiOperation({ summary: 'Create user' })
+  @ApiBadRequestResponse({ description: 'Bad Request' })
+  @ApiConflictResponse({ description: 'Conflict' })
+  @ApiOkResponse({ description: 'User created' })
   @Public()
   @Post()
   async create(@Body() body: CreateUserForm) {
@@ -51,6 +65,10 @@ export class AuthController {
     return this.authService.authenticate(entity);
   }
 
+  @ApiOperation({ summary: 'User login' })
+  @ApiBadRequestResponse({ description: 'Bad Request' })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  @ApiForbiddenResponse({ description: 'Invalid password' })
   @Public()
   @Post('login')
   async login(@Body() body: LoginForm) {
@@ -73,12 +91,16 @@ export class AuthController {
     return this.authService.authenticate(user);
   }
 
+  @ApiOperation({ summary: 'User logout' })
+  @ApiOkResponse({ description: 'Logout successful' })
   @Post('logout')
   async logout(@CurrentUser() currentUser: UserSessionDto) {
     await this.authService.logout({ id: currentUser.sub, refreshToken: null });
     return true;
   }
 
+  @ApiOperation({ summary: 'Refresh tokens' })
+  @ApiForbiddenResponse({ description: 'Forbidden' })
   @Public()
   @UseGuards(RefreshTokenGuard)
   @Get('refresh')
@@ -106,6 +128,10 @@ export class AuthController {
     return this.authService.authenticate(user);
   }
 
+  @ApiOperation({ summary: 'Reset password' })
+  @ApiBadRequestResponse({ description: 'Validation failed' })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  @ApiOkResponse({ description: 'Password reset successfully' })
   @Public()
   @Post('reset-password')
   async resetPassword(@Body() body: ResetPasswordForm) {
