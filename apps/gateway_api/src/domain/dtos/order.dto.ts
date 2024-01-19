@@ -1,5 +1,3 @@
-// order.dto.ts
-
 import { Order, Status } from '@prisma/client';
 import { IsEnum, IsNumber, IsUUID } from 'class-validator';
 import { UUIDDto } from './uuid.dto';

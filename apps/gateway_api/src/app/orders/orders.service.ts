@@ -26,9 +26,20 @@ export class OrdersService {
   }
 
   async getAllOrders(order: Pick<Order, 'userId'>) {
-    return await this.ordersRepo.getAllOrders(order);
+    const orders = await this.ordersRepo.getAllOrders(order);
+    const ordersWithTickets = [];
+
+    for (const order of orders) {
+      const tickets = await this.getAllOrderTickets({ id: order.id });
+      ordersWithTickets.push({
+        order,
+        tickets,
+      });
+    }
+
+    return ordersWithTickets;
   }
-  async getOrders(data: Pick<Order, 'userId'>) {
+  async getBookedOrders(data: Pick<Order, 'userId'>) {
     const orders = await this.ordersRepo.getOrdersById(data);
 
     const ordersWithTickets = [];

@@ -10,6 +10,7 @@ import {
 import { Role } from '@prisma/client';
 import { CurrentUser } from 'libs/security/decorators/current-user.decorator';
 import { Roles } from 'libs/security/decorators/roles.decorator';
+import { OrderWithTicketsDto } from '../../domain/dtos/order-with-tickets.dto';
 import { OrderDto } from '../../domain/dtos/order.dto';
 import { TicketInfoDto } from '../../domain/dtos/ticketInfo.dto';
 import { UserSessionDto } from '../../domain/dtos/user-session.dto';
@@ -44,11 +45,12 @@ export class OrdersController {
   @Get('getAllUserOrders')
   async getAllOrders(
     @CurrentUser() currentUser: UserSessionDto,
-  ): Promise<OrderDto[]> {
-    const orders = await this.ordersService.getAllOrders({
+  ): Promise<any[]> {
+    const ordersWithTickets = await this.ordersService.getAllOrders({
       userId: currentUser.sub,
     });
-    return OrderDto.fromEntities(orders)!;
+
+    return OrderWithTicketsDto.fromEntities(ordersWithTickets);
   }
 
   @Roles(Role.MANAGER, Role.USER)
@@ -56,11 +58,11 @@ export class OrdersController {
   async getBookedOrders(
     @CurrentUser() currentUser: UserSessionDto,
   ): Promise<any[]> {
-    const orders = await this.ordersService.getOrders({
+    const ordersWithTickets = await this.ordersService.getBookedOrders({
       userId: currentUser.sub,
     });
-    return orders;
-    // return OrderDto.fromEntities(orders)!;
+
+    return OrderWithTicketsDto.fromEntities(ordersWithTickets);
   }
 
   @Roles(Role.MANAGER, Role.USER)
