@@ -45,7 +45,6 @@ export class TicketsController {
         { id: currentUser.sub },
       );
       const groupedTickets = this.ticketsService.groupTickets(createdTickets);
-
       return groupedTickets;
     } catch (error) {
       console.error('Error creating tickets:', error);

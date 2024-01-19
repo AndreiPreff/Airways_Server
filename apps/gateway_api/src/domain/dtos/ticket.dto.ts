@@ -3,7 +3,6 @@ import { IsEnum, IsNumber, IsString, IsUUID } from 'class-validator';
 import { UUIDDto } from './uuid.dto';
 
 export class TicketDto extends UUIDDto {
-  @IsEnum(Status)
   status: Status;
 
   @IsNumber()

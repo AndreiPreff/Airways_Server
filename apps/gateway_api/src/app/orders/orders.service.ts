@@ -19,16 +19,29 @@ export class OrdersService {
   }
 
   async getAllOrderTickets(order: Pick<Order, 'id'>): Promise<Ticket[]> {
-    return await this.ticketsRepo.getAllOrderTickets({
+    const tickets = await this.ticketsRepo.getAllOrderTickets({
       orderId: order.id,
     });
+    return tickets;
   }
 
   async getAllOrders(order: Pick<Order, 'userId'>) {
     return await this.ordersRepo.getAllOrders(order);
   }
-  async getOrders(order: Pick<Order, 'userId'>) {
-    return await this.ordersRepo.getOrderById(order);
+  async getOrders(data: Pick<Order, 'userId'>) {
+    const orders = await this.ordersRepo.getOrdersById(data);
+
+    const ordersWithTickets = [];
+
+    for (const order of orders) {
+      const tickets = await this.getAllOrderTickets({ id: order.id });
+      ordersWithTickets.push({
+        order,
+        tickets,
+      });
+    }
+
+    return ordersWithTickets;
   }
 
   async updateOrderStatus(order: Pick<Order, 'id' | 'status'>) {

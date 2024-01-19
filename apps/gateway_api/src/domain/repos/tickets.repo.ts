@@ -35,6 +35,9 @@ export class TicketsRepo {
       where: {
         orderId: order.orderId,
       },
+      include: {
+        flight: true,
+      },
     });
   }
 

@@ -162,7 +162,7 @@ export class TicketsService {
       const directionGroup = (passportGroup[ticket.direction] =
         passportGroup[ticket.direction] || []);
 
-      directionGroup.push({ ...ticket, orderId: undefined });
+      directionGroup.push({ ...ticket, orderId: ticket.orderId });
     }
 
     return grouped;

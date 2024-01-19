@@ -15,7 +15,7 @@ export class OrdersRepo {
     return await this.prisma.order.create({ data: orderData });
   }
 
-  async getOrderById(order: Pick<Order, 'userId'>) {
+  async getOrdersById(order: Pick<Order, 'userId'>) {
     return await this.prisma.order.findMany({
       where: {
         userId: order.userId,
