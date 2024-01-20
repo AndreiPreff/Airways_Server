@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Order, Status, Ticket } from '@prisma/client';
+import { Pick } from '@prisma/client/runtime/library';
 import { PrismaService } from 'libs/prisma/prisma.service';
 import { FlightsRepo } from '../../domain/repos/flights.repo';
 import { OrdersRepo } from '../../domain/repos/orders.repo';
@@ -25,7 +26,9 @@ export class OrdersService {
     return tickets;
   }
 
-  async getAllOrders(order: Pick<Order, 'userId'>) {
+  async getAllOrders(
+    order: Pick<Order, 'userId'>,
+  ): Promise<{ order: Order; tickets: Ticket[] }[]> {
     const orders = await this.ordersRepo.getAllOrders(order);
     const ordersWithTickets = [];
 
@@ -39,7 +42,9 @@ export class OrdersService {
 
     return ordersWithTickets;
   }
-  async getBookedOrders(data: Pick<Order, 'userId'>) {
+  async getBookedOrders(
+    data: Pick<Order, 'userId'>,
+  ): Promise<{ order: Order; tickets: Ticket[] }[]> {
     const orders = await this.ordersRepo.getOrdersById(data);
 
     const ordersWithTickets = [];

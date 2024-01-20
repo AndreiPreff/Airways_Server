@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Flight } from '@prisma/client';
+import { Flight, PrismaClient } from '@prisma/client';
 import { PrismaService } from 'libs/prisma/prisma.service';
 
 @Injectable()
@@ -28,8 +28,11 @@ export class FlightsRepo {
     });
   }
 
-  async getFlightById(flight: Pick<Flight, 'id'>): Promise<Flight> {
-    return await this.prisma.flight.findUnique({
+  async getFlightById(
+    flight: Pick<Flight, 'id'>,
+    prisma?: PrismaClient,
+  ): Promise<Flight> {
+    return await (prisma || this.prisma).flight.findUnique({
       where: {
         id: flight.id,
       },
@@ -38,8 +41,9 @@ export class FlightsRepo {
 
   async updateAvailableTickets(
     flight: Pick<Flight, 'id' | 'available_tickets'>,
+    prisma?: PrismaClient,
   ): Promise<Flight> {
-    return await this.prisma.flight.update({
+    return await (prisma || this.prisma).flight.update({
       where: {
         id: flight.id,
       },

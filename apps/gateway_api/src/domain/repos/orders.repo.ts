@@ -1,18 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { Order, Status } from '@prisma/client';
+import { Order, PrismaClient, Status } from '@prisma/client';
 import { PrismaService } from 'libs/prisma/prisma.service';
 
 @Injectable()
 export class OrdersRepo {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createOrder(user: Pick<Order, 'userId'>) {
+  async createOrder(user: Pick<Order, 'userId'>, prisma?: PrismaClient) {
     const orderData = {
       order_total: 0,
       status: 'BOOKED' as Status,
       userId: user.userId,
     };
-    return await this.prisma.order.create({ data: orderData });
+    return await (prisma || this.prisma).order.create({ data: orderData });
   }
 
   async getOrdersById(order: Pick<Order, 'userId'>) {
@@ -24,8 +24,11 @@ export class OrdersRepo {
     });
   }
 
-  async updateOrder(order: Pick<Order, 'id' | 'order_total'>) {
-    return await this.prisma.order.update({
+  async updateOrder(
+    order: Pick<Order, 'id' | 'order_total'>,
+    prisma?: PrismaClient,
+  ) {
+    return await (prisma || this.prisma).order.update({
       where: {
         id: order.id,
       },

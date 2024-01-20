@@ -74,7 +74,7 @@ export class AuthController {
   }
 
   @Post('logout')
-  async logout(@CurrentUser() currentUser: UserSessionDto) {
+  async logout(@CurrentUser() currentUser: UserSessionDto): Promise<boolean> {
     await this.authService.logout({ id: currentUser.sub, refreshToken: null });
     return true;
   }

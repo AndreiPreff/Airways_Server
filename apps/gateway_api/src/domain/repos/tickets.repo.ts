@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Ticket } from '@prisma/client';
+import { PrismaClient, Ticket } from '@prisma/client';
 import { PrismaService } from 'libs/prisma/prisma.service';
 
 @Injectable()
@@ -18,8 +18,9 @@ export class TicketsRepo {
       | 'passengerPassportNumber'
       | 'direction'
     >,
+    prisma?: PrismaClient,
   ): Promise<Ticket> {
-    return await this.prisma.ticket.create({
+    return await (prisma || this.prisma).ticket.create({
       data: ticketData,
     });
   }
@@ -43,8 +44,9 @@ export class TicketsRepo {
 
   async updateTicket(
     ticketData: Pick<Ticket, 'status' | 'id'>,
+    prisma?: PrismaClient,
   ): Promise<Ticket | null> {
-    return await this.prisma.ticket.update({
+    return await (prisma || this.prisma).ticket.update({
       where: { id: ticketData.id },
       data: ticketData,
     });

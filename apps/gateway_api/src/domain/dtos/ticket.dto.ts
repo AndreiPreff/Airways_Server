@@ -52,4 +52,24 @@ export class TicketDto extends UUIDDto {
     }
     return entities.map((entity) => this.fromEntity(entity)!);
   }
+
+  static groupTickets(
+    tickets: Ticket[],
+  ): Record<string, Record<string, Ticket[]>> {
+    const grouped: Record<string, Record<string, Ticket[]>> = {};
+
+    for (const ticket of tickets) {
+      const passportNumber = ticket.passengerPassportNumber;
+
+      const passportGroup = (grouped[passportNumber] =
+        grouped[passportNumber] || {});
+
+      const directionGroup = (passportGroup[ticket.direction] =
+        passportGroup[ticket.direction] || []);
+
+      directionGroup.push({ ...ticket, orderId: ticket.orderId });
+    }
+
+    return grouped;
+  }
 }
