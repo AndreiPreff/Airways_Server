@@ -75,6 +75,9 @@ export class OrdersRepo {
     return await this.prisma.order.findMany({
       where: {
         userId: order.userId,
+        status: {
+          in: ['BOOKED', 'PAID'],
+        },
       },
     });
   }
