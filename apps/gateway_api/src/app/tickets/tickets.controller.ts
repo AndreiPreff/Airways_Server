@@ -9,7 +9,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
-import { Role } from '@prisma/client';
+import { Role, Ticket } from '@prisma/client';
 import { CurrentUser } from 'libs/security/decorators/current-user.decorator';
 import { Roles } from 'libs/security/decorators/roles.decorator';
 import { TicketDto } from '../../domain/dtos/ticket.dto';
@@ -31,7 +31,7 @@ export class TicketsController {
   async createTicket(
     @Body() body: CreateTicketForm[],
     @CurrentUser() currentUser: UserSessionDto,
-  ): Promise<any> {
+  ): Promise<Record<string, Record<string, Ticket[]>>> {
     const forms = body.map((ticketData) => CreateTicketForm.from(ticketData));
 
     const errors = await Promise.all(
@@ -101,6 +101,8 @@ export class TicketsController {
     const deletedTicket = await this.ticketsService.deleteTicket({
       id: ticketId,
     });
-    return TicketDto.fromEntity(deletedTicket)!;
+    if (deletedTicket) {
+      return null;
+    }
   }
 }

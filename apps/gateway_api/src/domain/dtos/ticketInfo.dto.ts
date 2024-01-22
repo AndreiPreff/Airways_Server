@@ -100,4 +100,24 @@ export class TicketInfoDto {
 
     return entities.map((entity) => this.fromEntity(entity)!);
   }
+
+  static groupTickets(
+    tickets: TicketInfoDto[],
+  ): Record<string, Record<string, TicketInfoDto[]>> {
+    const grouped: Record<string, Record<string, TicketInfoDto[]>> = {};
+
+    for (const ticket of tickets) {
+      const passportNumber = ticket.passengerPassportNumber;
+
+      const passportGroup = (grouped[passportNumber] =
+        grouped[passportNumber] || {});
+
+      const directionGroup = (passportGroup[ticket.direction] =
+        passportGroup[ticket.direction] || []);
+
+      directionGroup.push({ ...ticket, orderId: ticket.orderId });
+    }
+
+    return grouped;
+  }
 }

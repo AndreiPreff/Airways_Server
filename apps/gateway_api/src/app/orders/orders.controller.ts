@@ -41,7 +41,9 @@ export class OrdersController {
   @ApiOkResponse({ description: 'List of tickets for the order' })
   @Roles(Role.MANAGER, Role.USER)
   @Get('getOrderTickets/:id')
-  async getAllOrderTickets(@Param('id') orderId: string): Promise<any> {
+  async getAllOrderTickets(
+    @Param('id') orderId: string,
+  ): Promise<TicketInfoDto[]> {
     const tickets = await this.ordersService.getAllOrderTickets({
       id: orderId,
     });
@@ -54,7 +56,7 @@ export class OrdersController {
   @Get('getAllUserOrders')
   async getAllOrders(
     @CurrentUser() currentUser: UserSessionDto,
-  ): Promise<any[]> {
+  ): Promise<OrderWithTicketsDto[]> {
     const ordersWithTickets = await this.ordersService.getAllOrders({
       userId: currentUser.sub,
     });
@@ -68,7 +70,7 @@ export class OrdersController {
   @Get('getBookedOrders')
   async getBookedOrders(
     @CurrentUser() currentUser: UserSessionDto,
-  ): Promise<any[]> {
+  ): Promise<OrderWithTicketsDto[]> {
     const ordersWithTickets = await this.ordersService.getBookedOrders({
       userId: currentUser.sub,
     });

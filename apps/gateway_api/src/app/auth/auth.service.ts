@@ -12,24 +12,29 @@ export class AuthService {
     private securityService: SecurityService,
   ) {}
 
-  async authenticate(user: Pick<User, 'email' | 'role' | 'id'>) {
+  async authenticate(
+    user: Pick<User, 'email' | 'role' | 'id'>,
+  ): Promise<TokensDto> {
     const [accessToken, refreshToken] = await this.generateTokens(user);
     return {
       access_token: accessToken,
       refresh_token: refreshToken,
       role: user.role,
-    } as TokensDto;
+    };
   }
 
-  async comparePasswords(formPassword: string, user: User) {
+  async comparePasswords(formPassword: string, user: User): Promise<boolean> {
     return this.securityService.comparePasswords(formPassword, user.password);
   }
 
-  async logout(user: Pick<User, 'id' | 'refreshToken'>) {
+  async logout(user: Pick<User, 'id' | 'refreshToken'>): Promise<User> {
     return this.usersRepo.update(user);
   }
 
-  async compareRefreshTokens(refreshToken: string, user: User) {
+  async compareRefreshTokens(
+    refreshToken: string,
+    user: User,
+  ): Promise<boolean> {
     return this.securityService.compareRefreshTokens(
       refreshToken,
       user.refreshToken,

@@ -1,5 +1,3 @@
-// src/chat/chat.gateway.ts
-
 import {
   ConnectedSocket,
   MessageBody,
@@ -40,7 +38,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): Promise<void> {
     console.log('Received message:', data);
 
-    // Сохраняем сообщение в базе данных
     const message = await this.prisma.message.create({
       data: {
         senderId: data.senderId,
@@ -49,12 +46,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       },
     });
 
-    // Сохраняем сообщение в Redis
     await this.redisService.hmset(`message:${message.id}`, {
       text: data.content,
     });
 
-    // Отправляем сообщение всем подключенным клиентам
     this.server.emit('message', {
       senderId: data.senderId,
       content: data.content,
@@ -68,7 +63,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): Promise<void> {
     console.log(`User ${data.userId} joined the chat`);
 
-    // Загрузка истории сообщений из базы данных
     const messages = await this.prisma.message.findMany({
       where: { senderId: data.userId },
       orderBy: { createdAt: 'desc' },

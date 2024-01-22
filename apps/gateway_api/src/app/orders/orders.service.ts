@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Order, Status, Ticket } from '@prisma/client';
+import { Pick } from '@prisma/client/runtime/library';
 import { PrismaService } from 'libs/prisma/prisma.service';
 import { FlightsRepo } from '../../domain/repos/flights.repo';
 import { OrdersRepo } from '../../domain/repos/orders.repo';
@@ -25,7 +26,9 @@ export class OrdersService {
     return tickets;
   }
 
-  async getAllOrders(order: Pick<Order, 'userId'>) {
+  async getAllOrders(
+    order: Pick<Order, 'userId'>,
+  ): Promise<{ order: Order; tickets: Ticket[] }[]> {
     const orders = await this.ordersRepo.getAllOrders(order);
     const ordersWithTickets = [];
 
@@ -39,7 +42,9 @@ export class OrdersService {
 
     return ordersWithTickets;
   }
-  async getBookedOrders(data: Pick<Order, 'userId'>) {
+  async getBookedOrders(
+    data: Pick<Order, 'userId'>,
+  ): Promise<{ order: Order; tickets: Ticket[] }[]> {
     const orders = await this.ordersRepo.getOrdersById(data);
 
     const ordersWithTickets = [];
@@ -56,8 +61,11 @@ export class OrdersService {
   }
 
   async updateOrderStatus(order: Pick<Order, 'id' | 'status'>) {
-    return this.prisma.$transaction(async () => {
-      const updatedOrder = await this.ordersRepo.updateOrderStatus(order);
+    return this.prisma.$transaction(async (prisma: PrismaService) => {
+      const updatedOrder = await this.ordersRepo.updateOrderStatus(
+        order,
+        prisma,
+      );
 
       const tickets = await this.ticketsRepo.getAllOrderTickets({
         orderId: order.id,
@@ -65,17 +73,26 @@ export class OrdersService {
 
       for (const ticket of tickets) {
         if (ticket.status !== ('CANCELLED' as Status)) {
-          await this.ticketsRepo.updateTicket({
-            id: ticket.id,
-            status: order.status,
-          });
-          const flight = await this.flightsRepo.getFlightById({
-            id: ticket.flightId,
-          });
-          await this.flightsRepo.updateAvailableTickets({
-            id: flight.id,
-            available_tickets: flight.available_tickets + 1,
-          });
+          await this.ticketsRepo.updateTicket(
+            {
+              id: ticket.id,
+              status: order.status,
+            },
+            prisma,
+          );
+          const flight = await this.flightsRepo.getFlightById(
+            {
+              id: ticket.flightId,
+            },
+            prisma,
+          );
+          await this.flightsRepo.updateAvailableTickets(
+            {
+              id: flight.id,
+              available_tickets: flight.available_tickets + 1,
+            },
+            prisma,
+          );
         }
       }
       return updatedOrder;
