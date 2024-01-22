@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class LoginForm {
   @ApiProperty({
-    description: 'User Email',
+    description: 'User\'s Email',
     example: 'user@example.com',
   })
   @IsNotEmpty()
@@ -11,7 +11,7 @@ export class LoginForm {
   email: string;
 
   @ApiProperty({
-    description: 'User Password',
+    description: 'User\'s Password',
     example: 'qwerty09876',
   })
   @IsNotEmpty()

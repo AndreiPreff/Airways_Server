@@ -18,6 +18,7 @@ import {
   ApiOkResponse,
   ApiTags,
   ApiOperation,
+  ApiCreatedResponse,
 } from '@nestjs/swagger';
 
 import { UsersService } from 'apps/gateway_api/src/app/users/users.service';
@@ -39,12 +40,41 @@ export class AuthController {
     private readonly usersService: UsersService,
   ) {}
 
-  @ApiOperation({ summary: 'Create user' })
-  @ApiBadRequestResponse({ description: 'Bad Request' })
-  @ApiConflictResponse({
-    description: 'A user with the provided email already exists',
+  @ApiOperation({ summary: "User's signup" })
+  @ApiCreatedResponse({
+    description: 'User successfully created',
+    schema: {
+      example: {
+        user: {},
+        accessToken: `accessToken string`,
+        refreshToken: `refreshToken string`,
+        role: `USER`,
+      },
+    },
   })
-  @ApiOkResponse({ description: 'User created' })
+  @ApiConflictResponse({
+    description: 'User exists',
+    schema: {
+      example: {
+        message: 'A user with the provided email already exists.',
+        error: 'Conflict',
+        statusCode: 409,
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description: "User's creation failed",
+    schema: {
+      example: {
+        message: [
+          'email must be an email',
+          'password must be longer than or equal to 8 characters',
+        ],
+        error: 'Bad Request',
+        statusCode: 400,
+      },
+    },
+  })
   @Public()
   @Post()
   async create(@Body() body: CreateUserForm) {

@@ -44,16 +44,14 @@ export class TicketsController {
       throw new BadRequestException(errors.filter((error) => error !== false));
     }
 
-    try {
+
       const createdTickets = await this.ticketsService.createTicketWithOrder(
         forms,
         { id: currentUser.sub },
       );
-      const groupedTickets = this.ticketsService.groupTickets(createdTickets);
-      return groupedTickets;
-    } catch (error) {
-      console.error('Error creating tickets:', error);
-    }
+      return TicketDto.groupTickets(createdTickets);
+      
+  
   }
 
   @ApiOperation({ summary: 'Get ticket by ID' })
