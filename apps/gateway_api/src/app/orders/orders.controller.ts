@@ -41,7 +41,6 @@ export class OrdersController {
       id: orderId,
     });
     return TicketInfoDto.fromEntities(tickets)!;
-    // return TicketInfoDto.groupTickets(dataTickets);
   }
 
   @Roles(Role.MANAGER, Role.USER)

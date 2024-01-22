@@ -16,6 +16,7 @@ import { UserSessionDto } from 'apps/gateway_api/src/domain/dtos/user-session.dt
 import { CurrentUser } from 'libs/security/decorators/current-user.decorator';
 import { Public } from 'libs/security/decorators/public.decorator';
 import { RefreshTokenGuard } from 'libs/security/guards/refresh-token.guard';
+import { TokensDto } from '../../domain/dtos/tokens.dto';
 import { CreateUserForm } from '../users/domain/create-user.form';
 import { AuthService } from './auth.service';
 import { LoginForm } from './domain/login.form';
@@ -53,7 +54,7 @@ export class AuthController {
 
   @Public()
   @Post('login')
-  async login(@Body() body: LoginForm) {
+  async login(@Body() body: LoginForm): Promise<TokensDto> {
     const form = LoginForm.from(body);
     const errors = await LoginForm.validate(form);
     if (errors) {
@@ -82,7 +83,9 @@ export class AuthController {
   @Public()
   @UseGuards(RefreshTokenGuard)
   @Get('refresh')
-  async refreshTokens(@CurrentUser() currentUser: UserSessionDto) {
+  async refreshTokens(
+    @CurrentUser() currentUser: UserSessionDto,
+  ): Promise<TokensDto> {
     const user = await this.usersService.findById({ id: currentUser.sub });
     if (!user) {
       throw new HttpException('User not found', HttpStatus.FORBIDDEN);

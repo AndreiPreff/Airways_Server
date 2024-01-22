@@ -25,7 +25,7 @@ export class TicketsRepo {
     });
   }
 
-  async getTicketById(ticketId: Pick<Ticket, 'id'>): Promise<Ticket | null> {
+  async getTicketById(ticketId: Pick<Ticket, 'id'>): Promise<Ticket> {
     return await this.prisma.ticket.findUnique({
       where: { id: ticketId.id },
     });
@@ -45,14 +45,17 @@ export class TicketsRepo {
   async updateTicket(
     ticketData: Pick<Ticket, 'status' | 'id'>,
     prisma?: PrismaClient,
-  ): Promise<Ticket | null> {
+  ): Promise<Ticket> {
     return await (prisma || this.prisma).ticket.update({
       where: { id: ticketData.id },
       data: ticketData,
+      include: {
+        flight: true,
+      },
     });
   }
 
-  async deleteTicket(ticket: Pick<Ticket, 'id'>): Promise<Ticket | null> {
+  async deleteTicket(ticket: Pick<Ticket, 'id'>): Promise<Ticket> {
     return await this.prisma.ticket.delete({
       where: { id: ticket.id },
     });

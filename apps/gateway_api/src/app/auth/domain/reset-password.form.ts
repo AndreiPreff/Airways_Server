@@ -1,4 +1,3 @@
-// reset-password.form.ts
 import { IsEmail, IsNotEmpty, IsString, validate } from 'class-validator';
 
 export class ResetPasswordForm {

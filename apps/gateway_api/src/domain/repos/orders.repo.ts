@@ -6,7 +6,10 @@ import { PrismaService } from 'libs/prisma/prisma.service';
 export class OrdersRepo {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createOrder(user: Pick<Order, 'userId'>, prisma?: PrismaClient) {
+  async createOrder(
+    user: Pick<Order, 'userId'>,
+    prisma?: PrismaClient,
+  ): Promise<Order> {
     const orderData = {
       order_total: 0,
       status: 'BOOKED' as Status,
@@ -15,7 +18,7 @@ export class OrdersRepo {
     return await (prisma || this.prisma).order.create({ data: orderData });
   }
 
-  async getOrdersById(order: Pick<Order, 'userId'>) {
+  async getOrdersById(order: Pick<Order, 'userId'>): Promise<Order[]> {
     return await this.prisma.order.findMany({
       where: {
         userId: order.userId,
@@ -27,7 +30,7 @@ export class OrdersRepo {
   async updateOrder(
     order: Pick<Order, 'id' | 'order_total'>,
     prisma?: PrismaClient,
-  ) {
+  ): Promise<Order> {
     return await (prisma || this.prisma).order.update({
       where: {
         id: order.id,
@@ -40,8 +43,11 @@ export class OrdersRepo {
     });
   }
 
-  async updateOrderStatus(order: Pick<Order, 'id' | 'status'>) {
-    const existingOrder = await this.prisma.order.findUnique({
+  async updateOrderStatus(
+    order: Pick<Order, 'id' | 'status'>,
+    prisma?: PrismaClient,
+  ): Promise<Order> {
+    const existingOrder = await (prisma || this.prisma).order.findUnique({
       where: {
         id: order.id,
       },
@@ -49,7 +55,7 @@ export class OrdersRepo {
     if (existingOrder.status === 'CANCELLED') {
       return null;
     }
-    const updatedOrder = await this.prisma.order.update({
+    const updatedOrder = await (prisma || this.prisma).order.update({
       where: {
         id: order.id,
       },
@@ -58,7 +64,7 @@ export class OrdersRepo {
       },
     });
     if (order.status === 'CANCELLED') {
-      await this.prisma.order.update({
+      await (prisma || this.prisma).order.update({
         where: {
           id: order.id,
         },
@@ -71,7 +77,7 @@ export class OrdersRepo {
     return updatedOrder;
   }
 
-  async getAllOrders(order: Pick<Order, 'userId'>) {
+  async getAllOrders(order: Pick<Order, 'userId'>): Promise<Order[]> {
     return await this.prisma.order.findMany({
       where: {
         userId: order.userId,

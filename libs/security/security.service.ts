@@ -13,7 +13,10 @@ export class SecurityService {
     private jwtService: JwtService,
   ) {}
 
-  async comparePasswords(formPassword: string, userPassword: string) {
+  async comparePasswords(
+    formPassword: string,
+    userPassword: string,
+  ): Promise<boolean> {
     return bcrypt.compare(formPassword, userPassword);
   }
 
@@ -44,7 +47,10 @@ export class SecurityService {
     return refreshToken;
   }
 
-  async compareRefreshTokens(refreshToken: string, refreshTokenDb: string) {
+  async compareRefreshTokens(
+    refreshToken: string,
+    refreshTokenDb: string,
+  ): Promise<boolean> {
     return bcrypt.compare(refreshToken, refreshTokenDb);
   }
 }
