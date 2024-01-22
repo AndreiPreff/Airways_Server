@@ -41,7 +41,9 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Create user' })
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  @ApiConflictResponse({ description: 'Conflict' })
+  @ApiConflictResponse({
+    description: 'A user with the provided email already exists',
+  })
   @ApiOkResponse({ description: 'User created' })
   @Public()
   @Post()
