@@ -98,10 +98,38 @@ export class AuthController {
     return this.authService.authenticate(entity);
   }
 
-  @ApiOperation({ summary: 'User login' })
-  @ApiBadRequestResponse({ description: 'Bad Request' })
-  @ApiNotFoundResponse({ description: 'User not found' })
-  @ApiForbiddenResponse({ description: 'Invalid password' })
+  @ApiOperation({ summary: "User's login" })
+  @ApiBadRequestResponse({
+    description: "Enter a valid email",
+    schema: {
+      example: {
+        message: [
+          'email must be an email',
+        ],
+        error: 'Bad Request',
+        statusCode: 400,
+      },
+    },
+  })
+  @ApiNotFoundResponse({
+    description: 'User not found',
+    schema: {
+      example: {
+        message: 'User not found',
+        error: 'Not Found',
+        statusCode: 404,
+      },
+    },
+  })
+  @ApiForbiddenResponse({
+    description: 'Wrong password',
+    schema: {
+      example: {
+        message: 'Invalid password',
+        statusCode: 403,
+      },
+    },
+  })
   @Public()
   @Post('login')
   async login(@Body() body: LoginForm): Promise<TokensDto> {
