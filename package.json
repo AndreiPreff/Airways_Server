@@ -22,7 +22,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./apps/gateway_api/test/jest-e2e.json",
-    "seed": "ts-node seeder/seed.ts"
+    "seed": "ts-node seeder/seed.ts",
+    "start-api": "nest start gateway_api",
+    "start-chat": " nest start gateway_chat"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
