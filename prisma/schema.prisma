@@ -38,7 +38,8 @@ model User {
   role         Role     @default(USER)
   refreshToken String?
 
-  orders Order[]
+  orders   Order[]
+  messages Message[]
 
   @@index([id])
   @@index([email])
@@ -94,4 +95,17 @@ model Flight {
 
   @@index([id])
   @@index([departure_time])
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  content   String
+  roomId    String
+  senderId  String
+  user      User     @relation(fields: [senderId], references: [id])
+
+  @@index([id])
+  @@index([roomId])
 }
