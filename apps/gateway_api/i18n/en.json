@@ -1,0 +1,30 @@
+{
+    "auth": {
+      "userExists": "A user with the provided email already exists.",
+      "userNotFound": "User not found.",
+      "invalidPassword": "Invalid password",
+      "noRefreshToken": "Refresh token is not present",
+      "refreshTokenNotValid": "Refresh token is not valid",
+      "validationFailed": "Validation failed",
+      "passwordResetSuccess": "Password reset successfully"
+    },
+    "flights": {
+        "validationError": "Validation failed",
+        "processingError": "An error occurred while processing flights request"
+    },
+    "orders": {
+        "createError": "Error creating an order",
+        "updateError": "Error updating the order"
+    },
+    "tickets": {
+        "createError": "Error creating a ticket",
+        "updateError": "Error updating the ticket"
+    },
+    "users": {
+        "userNotFound": "User not found",
+        "userNotFoundById": "User with ID {userId} does not exist"
+    }
+
+        
+  }
+  

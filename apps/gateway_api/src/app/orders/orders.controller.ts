@@ -16,20 +16,29 @@ import { TicketInfoDto } from '../../domain/dtos/ticketInfo.dto';
 import { UserSessionDto } from '../../domain/dtos/user-session.dto';
 import { UpdateOrderForm } from './domain/update-order.form';
 import { OrdersService } from './orders.service';
+import { I18nService } from 'nestjs-i18n';
 
 @Controller('orders')
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(
+    private readonly ordersService: OrdersService,
+    private readonly i18n: I18nService,
+  ) {}
 
   @Roles(Role.MANAGER, Role.USER)
   @Post()
   async createOrder(
     @CurrentUser() currentUser: UserSessionDto,
   ): Promise<OrderDto> {
-    const createdOrder = await this.ordersService.createOrder({
-      userId: currentUser.sub,
-    });
-    return OrderDto.fromEntity(createdOrder)!;
+    try {
+      const createdOrder = await this.ordersService.createOrder({
+        userId: currentUser.sub,
+      });
+      return OrderDto.fromEntity(createdOrder)!;
+    } catch (error) {
+      const errorMessage = await this.i18n.translate('orders.createError');
+      throw new BadRequestException(errorMessage);
+    }
   }
 
   @Roles(Role.MANAGER, Role.USER)
@@ -79,10 +88,15 @@ export class OrdersController {
     if (errors) {
       throw new BadRequestException(errors);
     }
-    const updatedOrder = await this.ordersService.updateOrderStatus({
-      id: orderId,
-      status: body.status,
-    });
-    return OrderDto.fromEntity(updatedOrder);
+    try {
+      const updatedOrder = await this.ordersService.updateOrderStatus({
+        id: orderId,
+        status: body.status,
+      });
+      return OrderDto.fromEntity(updatedOrder);
+    } catch (error) {
+      const errorMessage = await this.i18n.translate('orders.updateError');
+      throw new BadRequestException(errorMessage);
+    }
   }
 }

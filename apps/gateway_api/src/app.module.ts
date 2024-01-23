@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { I18nModule } from 'nestjs-i18n';
+import { I18nConfigService } from './config/i18n.config';
 
 import { PrismaModule } from 'libs/prisma/prisma.module';
 import { AuthModule } from './app/auth/auth.module';
@@ -19,6 +21,9 @@ import { TicketsModule } from './app/tickets/tickets.module';
     FlightsModule,
     TicketsModule,
     OrdersModule,
+    I18nModule.forRootAsync({
+      useClass: I18nConfigService,
+    }),
   ],
   providers: [
     {
