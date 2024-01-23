@@ -100,12 +100,10 @@ export class AuthController {
 
   @ApiOperation({ summary: "User's login" })
   @ApiBadRequestResponse({
-    description: "Enter a valid email",
+    description: 'Enter a valid email',
     schema: {
       example: {
-        message: [
-          'email must be an email',
-        ],
+        message: ['email must be an email'],
         error: 'Bad Request',
         statusCode: 400,
       },
@@ -192,9 +190,35 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Reset password' })
-  @ApiBadRequestResponse({ description: 'Validation failed' })
-  @ApiNotFoundResponse({ description: 'User not found' })
-  @ApiOkResponse({ description: 'Password reset successfully' })
+  @ApiOkResponse({
+    description: 'Password reset',
+    schema: {
+      example: {
+        message: 'Password reset successfully',
+        statusCode: 201,
+      },
+    },
+  })
+  @ApiNotFoundResponse({
+    description: 'User not found',
+    schema: {
+      example: {
+        message: 'User not found',
+        error: 'Not Found',
+        statusCode: 404,
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description: 'Validation failed',
+    schema: {
+      example: {
+        message: ['email must be an email', 'password should not be empty'],
+        error: 'Bad Request',
+        statusCode: 400,
+      },
+    },
+  })
   @Public()
   @Post('reset-password')
   async resetPassword(@Body() body: ResetPasswordForm) {
