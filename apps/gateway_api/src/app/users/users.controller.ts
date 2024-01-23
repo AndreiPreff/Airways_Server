@@ -22,7 +22,6 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Roles(Role.USER)
   @Get('/profile')
   async findUser(@CurrentUser() currentUser: UserSessionDto) {
     const user = await this.usersService.findById({ id: currentUser.sub });
@@ -44,14 +43,14 @@ export class UsersController {
     return UserDto.fromEntity(user);
   }
 
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.USER)
   @Get()
   async findAll() {
     const entities = await this.usersService.findAll();
     return UserDto.fromEntities(entities);
   }
 
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.USER) //change
   @Patch(':userId')
   async update(@Param('userId') userId: string, @Body() body: UpdateUserForm) {
     const form = UpdateUserForm.from(body);
