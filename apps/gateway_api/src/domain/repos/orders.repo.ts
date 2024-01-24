@@ -87,4 +87,35 @@ export class OrdersRepo {
       },
     });
   }
+
+  async deleteOrders(order: Pick<Order, 'userId'>) {
+    const orders = await this.prisma.order.findMany({
+      where: {
+        userId: order.userId,
+      },
+      include: {
+        tickets: true,
+      },
+    });
+    await this.prisma.message.deleteMany({
+      where: {
+        roomId: order.userId,
+      },
+    });
+
+    for (const order of orders) {
+      for (const ticket of order.tickets) {
+        await this.prisma.ticket.delete({
+          where: {
+            id: ticket.id,
+          },
+        });
+      }
+      await this.prisma.order.delete({
+        where: {
+          id: order.id,
+        },
+      });
+    }
+  }
 }
