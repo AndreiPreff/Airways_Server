@@ -1,7 +1,7 @@
 {
     "auth": {
-      "userExists": "A user with the provided email already exists.",
-      "userNotFound": "User not found.",
+      "userExists": "A user with the provided email already exists",
+      "userNotFound": "User not found",
       "invalidPassword": "Invalid password",
       "noRefreshToken": "Refresh token is not present",
       "refreshTokenNotValid": "Refresh token is not valid",
@@ -24,7 +24,6 @@
         "userNotFound": "User not found",
         "userNotFoundById": "User with ID {userId} does not exist"
     }
-
         
   }
   
