@@ -17,16 +17,20 @@ import { CurrentUser } from 'libs/security/decorators/current-user.decorator';
 import { Roles } from 'libs/security/decorators/roles.decorator';
 import { UpdateUserForm } from './domain/update-user.form';
 import { UsersService } from './users.service';
+import { I18nService } from 'nestjs-i18n';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly i18n: I18nService) {}
 
   @Get('/profile')
   async findUser(@CurrentUser() currentUser: UserSessionDto) {
     const user = await this.usersService.findById({ id: currentUser.sub });
     if (!user) {
-      throw new NotFoundException('User not found');
+      const errorMessage = await this.i18n.translate('users.userNotFound');
+      throw new NotFoundException(errorMessage);
     }
     return UserDto.fromEntity(user);
   }
@@ -36,9 +40,8 @@ export class UsersController {
   async findById(@Param('userId') userId: string) {
     const user = await this.usersService.findById({ id: userId });
     if (!user) {
-      throw new NotFoundException(
-        `User with the id of ${userId} does not exist.`,
-      );
+      const errorMessage = await this.i18n.translate('users.userNotFoundById', { args: { userId } });
+      throw new NotFoundException(errorMessage);
     }
     return UserDto.fromEntity(user);
   }

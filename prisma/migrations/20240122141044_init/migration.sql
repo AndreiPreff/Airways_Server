@@ -4,6 +4,9 @@ CREATE TYPE "Role" AS ENUM ('user', 'admin', 'manager');
 -- CreateEnum
 CREATE TYPE "Status" AS ENUM ('booked', 'paid', 'cancelled');
 
+-- CreateEnum
+CREATE TYPE "Direction" AS ENUM ('there', 'back');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
@@ -38,6 +41,10 @@ CREATE TABLE "Ticket" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "status" "Status" NOT NULL,
     "price" DOUBLE PRECISION NOT NULL,
+    "passengerName" TEXT,
+    "passengerLastName" TEXT,
+    "passengerPassportNumber" TEXT,
+    "direction" "Direction" NOT NULL DEFAULT 'there',
     "flightId" TEXT NOT NULL,
     "orderId" TEXT NOT NULL,
 
@@ -62,6 +69,36 @@ CREATE TABLE "Flight" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE INDEX "User_id_idx" ON "User"("id");
+
+-- CreateIndex
+CREATE INDEX "User_email_idx" ON "User"("email");
+
+-- CreateIndex
+CREATE INDEX "Order_id_idx" ON "Order"("id");
+
+-- CreateIndex
+CREATE INDEX "Order_userId_idx" ON "Order"("userId");
+
+-- CreateIndex
+CREATE INDEX "Ticket_id_idx" ON "Ticket"("id");
+
+-- CreateIndex
+CREATE INDEX "Ticket_orderId_idx" ON "Ticket"("orderId");
+
+-- CreateIndex
+CREATE INDEX "Ticket_passengerPassportNumber_idx" ON "Ticket"("passengerPassportNumber");
+
+-- CreateIndex
+CREATE INDEX "Ticket_direction_idx" ON "Ticket"("direction");
+
+-- CreateIndex
+CREATE INDEX "Flight_id_idx" ON "Flight"("id");
+
+-- CreateIndex
+CREATE INDEX "Flight_departure_time_idx" ON "Flight"("departure_time");
 
 -- AddForeignKey
 ALTER TABLE "Order" ADD CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

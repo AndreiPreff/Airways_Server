@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import {
   IsEmail,
@@ -9,27 +10,51 @@ import {
 } from 'class-validator';
 
 export class UpdateUserForm {
+  @ApiProperty({
+    description: 'User\'s Email',
+    example: 'user@example.com',
+  })
   @IsOptional()
   @IsEmail()
   email: string;
 
+  @ApiProperty({
+    description: 'User\'s Password',
+    example: 'qwerty09876',
+  })
   @IsOptional()
   @IsString()
   @MinLength(8)
   password: string;
 
+  @ApiProperty({
+    description: 'User\'s first name',
+    example: 'John',
+  })
   @IsOptional()
   @IsString()
   first_name: string;
 
+  @ApiProperty({
+    description: 'User\'s last name',
+    example: 'Doe',
+  })
   @IsOptional()
   @IsString()
   last_name: string;
 
+  @ApiProperty({
+    description: 'User\'s refreshToken',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im15ZW1vQGdvaG9tZS5jb20iLCJzdWIiOiI2ZTRiMDc0Ny01ZDQxLTQwZTItODQ3Zi05OTViZGNjZjUzZjUiLCJyb2xlIjoiVVNFUiIsImlhdCI6MTcwNjAwODA1OCwiZXhwIjoxNzA2NjEyODU4fQ.HquajtGgup9WHoHpXXBaHImn5',
+  })
   @IsOptional()
   @IsString()
   refreshToken: string;
 
+  @ApiProperty({
+    description: 'User\'s ROLE',
+    example: 'USER',
+  })
   @IsOptional()
   @IsEnum(Role)
   role: Role;

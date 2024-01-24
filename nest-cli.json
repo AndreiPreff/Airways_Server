@@ -16,7 +16,14 @@
       "entryFile": "main",
       "sourceRoot": "apps/gateway_api/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/gateway_api/tsconfig.app.json"
+        "tsConfigPath": "apps/gateway_api/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "i18n/**/*",
+            "watchAssets": true,
+            "outDir": "dist/apps/gateway_api"
+      }
+    ]
       }
     },
     "gateway_chat": {
