@@ -17,11 +17,15 @@ import { UserSessionDto } from '../../domain/dtos/user-session.dto';
 import { CreateTicketForm } from './domain/create-ticket.form';
 import { UpdateTicketForm } from './domain/update-ticket.form';
 import { TicketsService } from './tickets.service';
+import { I18nService } from 'nestjs-i18n';
+
 
 @ApiTags('tickets')
 @Controller('tickets')
 export class TicketsController {
-  constructor(private readonly ticketsService: TicketsService) {}
+  constructor(
+    private readonly ticketsService: TicketsService,
+    private readonly i18n: I18nService) {}
 
   @ApiOperation({ summary: 'Create ticket' })
   @ApiBadRequestResponse({ description: 'Bad Request' })
@@ -32,6 +36,7 @@ export class TicketsController {
     @Body() body: CreateTicketForm[],
     @CurrentUser() currentUser: UserSessionDto,
   ): Promise<Record<string, Record<string, Ticket[]>>> {
+    try {
     const forms = body.map((ticketData) => CreateTicketForm.from(ticketData));
 
     const errors = await Promise.all(
@@ -45,14 +50,16 @@ export class TicketsController {
     }
 
 
-      const createdTickets = await this.ticketsService.createTicketWithOrder(
-        forms,
-        { id: currentUser.sub },
-      );
-      return TicketDto.groupTickets(createdTickets);
-      
-  
+    const createdTickets = await this.ticketsService.createTicketWithOrder(
+      forms,
+      { id: currentUser.sub },
+    );
+    return TicketDto.groupTickets(createdTickets);
+  } catch (error) {
+    const errorMessage = await this.i18n.translate('tickets.createError');
+    throw new BadRequestException(errorMessage);
   }
+}
 
   @ApiOperation({ summary: 'Get ticket by ID' })
   @ApiParam({ name: 'id', type: 'string', description: 'Ticket ID' })
@@ -76,6 +83,7 @@ export class TicketsController {
     @Param('id') ticketId: string,
     @Body() body: UpdateTicketForm,
   ): Promise<TicketDto | null> {
+    try {
     const form = UpdateTicketForm.from(body);
     const errors = UpdateTicketForm.validate(form);
 
@@ -88,7 +96,11 @@ export class TicketsController {
       status: form.status,
     });
     return TicketDto.fromEntity(updatedTicket)!;
+  } catch (error) {
+    const errorMessage = await this.i18n.translate('tickets.updateError');
+    throw new BadRequestException(errorMessage);
   }
+}
 
   @ApiOperation({ summary: 'Delete ticket' })
   @ApiParam({ name: 'id', type: 'string', description: 'Ticket ID' })

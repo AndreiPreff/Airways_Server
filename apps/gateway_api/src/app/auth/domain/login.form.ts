@@ -30,3 +30,4 @@ export class LoginForm {
     return errors.length ? errors : false;
   }
 }
+

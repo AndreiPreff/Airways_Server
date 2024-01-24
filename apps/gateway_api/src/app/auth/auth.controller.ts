@@ -31,6 +31,7 @@ import { CreateUserForm } from '../users/domain/create-user.form';
 import { AuthService } from './auth.service';
 import { LoginForm } from './domain/login.form';
 import { ResetPasswordForm } from './domain/reset-password.form';
+import { I18nService } from 'nestjs-i18n';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -38,6 +39,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
+    private readonly i18n: I18nService,
   ) {}
 
   @ApiOperation({ summary: "User's signup" })
@@ -87,9 +89,7 @@ export class AuthController {
       email: body.email,
     });
     if (userExists) {
-      throw new ConflictException(
-        'A user with the provided email already exists.',
-      );
+      throw new ConflictException(await this.i18n.translate('auth.userExists'));
     }
     const entity = await this.usersService.create(form);
     if (!entity) {
@@ -138,14 +138,20 @@ export class AuthController {
     }
 
     const user = await this.usersService.findByEmail({ email: form.email });
-    if (!user) throw new NotFoundException('User not found');
+    if (!user)
+      throw new NotFoundException(
+        await this.i18n.translate('auth.userNotFound'),
+      );
 
     const isValid = await this.authService.comparePasswords(
       form.password,
       user,
     );
     if (!isValid)
-      throw new HttpException('Invalid password', HttpStatus.FORBIDDEN);
+      throw new HttpException(
+        await this.i18n.translate('auth.invalidPassword'),
+        HttpStatus.FORBIDDEN,
+      );
 
     return this.authService.authenticate(user);
   }
@@ -168,11 +174,14 @@ export class AuthController {
   ): Promise<TokensDto> {
     const user = await this.usersService.findById({ id: currentUser.sub });
     if (!user) {
-      throw new HttpException('User not found', HttpStatus.FORBIDDEN);
+      throw new HttpException(
+        await this.i18n.translate('auth.userNotFound'),
+        HttpStatus.FORBIDDEN,
+      );
     }
     if (!user.refreshToken) {
       throw new HttpException(
-        'Refresh token is not present',
+        await this.i18n.translate('auth.noRefreshToken'),
         HttpStatus.FORBIDDEN,
       );
     }
@@ -182,7 +191,7 @@ export class AuthController {
     );
     if (!refreshTokenMatches) {
       throw new HttpException(
-        'Refresh token is not valid',
+        await this.i18n.translate('auth.refreshTokenNotValid'),
         HttpStatus.FORBIDDEN,
       );
     }
@@ -225,18 +234,23 @@ export class AuthController {
     const form = ResetPasswordForm.from(body);
     const errors = await ResetPasswordForm.validate(form);
     if (errors) {
-      throw new BadRequestException('Validation failed');
+      throw new BadRequestException(
+        await this.i18n.translate('auth.validationFailed'),
+      );
     }
     const user = await this.usersService.findByEmail({ email: body.email });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(
+        await this.i18n.translate('auth.userNotFound'),
+      );
     }
     await this.usersService.resetPassword({
       id: user.id,
       password: form.password,
     });
 
-    return { message: 'Password reset successfully' };
+    const message = await this.i18n.translate('auth.passwordResetSuccess');
+    return { message };
   }
 }
