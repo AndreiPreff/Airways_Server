@@ -10,6 +10,16 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiBadRequestResponse,
+  ApiConflictResponse,
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiTags,
+  ApiOperation,
+  ApiCreatedResponse,
+} from '@nestjs/swagger';
 
 import { UsersService } from 'apps/gateway_api/src/app/users/users.service';
 import { UserSessionDto } from 'apps/gateway_api/src/domain/dtos/user-session.dto';
@@ -22,6 +32,7 @@ import { AuthService } from './auth.service';
 import { LoginForm } from './domain/login.form';
 import { ResetPasswordForm } from './domain/reset-password.form';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -29,6 +40,41 @@ export class AuthController {
     private readonly usersService: UsersService,
   ) {}
 
+  @ApiOperation({ summary: "User's signup" })
+  @ApiCreatedResponse({
+    description: 'User successfully created',
+    schema: {
+      example: {
+        user: {},
+        accessToken: `accessToken string`,
+        refreshToken: `refreshToken string`,
+        role: `USER`,
+      },
+    },
+  })
+  @ApiConflictResponse({
+    description: 'User exists',
+    schema: {
+      example: {
+        message: 'A user with the provided email already exists.',
+        error: 'Conflict',
+        statusCode: 409,
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description: "User's creation failed",
+    schema: {
+      example: {
+        message: [
+          'email must be an email',
+          'password must be longer than or equal to 8 characters',
+        ],
+        error: 'Bad Request',
+        statusCode: 400,
+      },
+    },
+  })
   @Public()
   @Post()
   async create(@Body() body: CreateUserForm) {
@@ -52,6 +98,36 @@ export class AuthController {
     return this.authService.authenticate(entity);
   }
 
+  @ApiOperation({ summary: "User's login" })
+  @ApiBadRequestResponse({
+    description: 'Enter a valid email',
+    schema: {
+      example: {
+        message: ['email must be an email'],
+        error: 'Bad Request',
+        statusCode: 400,
+      },
+    },
+  })
+  @ApiNotFoundResponse({
+    description: 'User not found',
+    schema: {
+      example: {
+        message: 'User not found',
+        error: 'Not Found',
+        statusCode: 404,
+      },
+    },
+  })
+  @ApiForbiddenResponse({
+    description: 'Wrong password',
+    schema: {
+      example: {
+        message: 'Invalid password',
+        statusCode: 403,
+      },
+    },
+  })
   @Public()
   @Post('login')
   async login(@Body() body: LoginForm): Promise<TokensDto> {
@@ -74,12 +150,16 @@ export class AuthController {
     return this.authService.authenticate(user);
   }
 
+  @ApiOperation({ summary: 'User logout' })
+  @ApiOkResponse({ description: 'Logout successful' })
   @Post('logout')
   async logout(@CurrentUser() currentUser: UserSessionDto): Promise<boolean> {
     await this.authService.logout({ id: currentUser.sub, refreshToken: null });
     return true;
   }
 
+  @ApiOperation({ summary: 'Refresh tokens' })
+  @ApiForbiddenResponse({ description: 'Forbidden' })
   @Public()
   @UseGuards(RefreshTokenGuard)
   @Get('refresh')
@@ -109,6 +189,36 @@ export class AuthController {
     return this.authService.authenticate(user);
   }
 
+  @ApiOperation({ summary: 'Reset password' })
+  @ApiOkResponse({
+    description: 'Password reset',
+    schema: {
+      example: {
+        message: 'Password reset successfully',
+        statusCode: 201,
+      },
+    },
+  })
+  @ApiNotFoundResponse({
+    description: 'User not found',
+    schema: {
+      example: {
+        message: 'User not found',
+        error: 'Not Found',
+        statusCode: 404,
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description: 'Validation failed',
+    schema: {
+      example: {
+        message: ['email must be an email', 'password should not be empty'],
+        error: 'Bad Request',
+        statusCode: 400,
+      },
+    },
+  })
   @Public()
   @Post('reset-password')
   async resetPassword(@Body() body: ResetPasswordForm) {

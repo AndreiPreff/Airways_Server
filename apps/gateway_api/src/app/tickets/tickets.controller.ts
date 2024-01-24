@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { ApiBadRequestResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Role, Ticket } from '@prisma/client';
 import { CurrentUser } from 'libs/security/decorators/current-user.decorator';
 import { Roles } from 'libs/security/decorators/roles.decorator';
@@ -17,10 +18,14 @@ import { CreateTicketForm } from './domain/create-ticket.form';
 import { UpdateTicketForm } from './domain/update-ticket.form';
 import { TicketsService } from './tickets.service';
 
+@ApiTags('tickets')
 @Controller('tickets')
 export class TicketsController {
   constructor(private readonly ticketsService: TicketsService) {}
 
+  @ApiOperation({ summary: 'Create ticket' })
+  @ApiBadRequestResponse({ description: 'Bad Request' })
+  @ApiOkResponse({ description: 'Ticket successfully created' })
   @Roles(Role.MANAGER, Role.USER)
   @Post()
   async createTicket(
@@ -39,13 +44,19 @@ export class TicketsController {
       throw new BadRequestException(errors.filter((error) => error !== false));
     }
 
-    const createdTickets = await this.ticketsService.createTicketWithOrder(
-      forms,
-      { id: currentUser.sub },
-    );
-    return TicketDto.groupTickets(createdTickets);
+
+      const createdTickets = await this.ticketsService.createTicketWithOrder(
+        forms,
+        { id: currentUser.sub },
+      );
+      return TicketDto.groupTickets(createdTickets);
+      
+  
   }
 
+  @ApiOperation({ summary: 'Get ticket by ID' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Ticket ID' })
+  @ApiOkResponse({ description: 'Ticket found' })
   @Roles(Role.MANAGER, Role.USER)
   @Get(':id')
   async getTicketById(
@@ -55,6 +66,10 @@ export class TicketsController {
     return TicketDto.fromEntity(ticket);
   }
 
+  @ApiOperation({ summary: 'Update ticket' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Ticket ID' })
+  @ApiBadRequestResponse({ description: 'Bad Request' })
+  @ApiOkResponse({ description: 'Ticket successfully updated' })
   @Roles(Role.MANAGER, Role.USER)
   @Patch(':id')
   async updateTicket(
@@ -75,6 +90,9 @@ export class TicketsController {
     return TicketDto.fromEntity(updatedTicket)!;
   }
 
+  @ApiOperation({ summary: 'Delete ticket' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Ticket ID' })
+  @ApiOkResponse({ description: 'Ticket successfully deleted' })
   @Roles(Role.MANAGER)
   @Delete(':id')
   async deleteTicket(@Param('id') ticketId: string): Promise<TicketDto | null> {

@@ -1,7 +1,13 @@
 import { Status } from '@prisma/client';
 import { IsString, validate } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateOrderForm {
+  @ApiProperty({
+    description: 'Order status',
+    example: Status.BOOKED,
+    enum: Status,
+  })
   @IsString()
   status: Status;
 

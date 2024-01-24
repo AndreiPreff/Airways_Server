@@ -1,9 +1,19 @@
 import { Order, Ticket } from '@prisma/client';
 import { OrderDto } from './order.dto';
 import { TicketInfoDto } from './ticketInfo.dto';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class OrderWithTicketsDto {
+  @ApiProperty({
+    description: 'Details of the order',
+    type: OrderDto,
+  })
   order: OrderDto;
+
+  @ApiProperty({
+    description: 'List of tickets associated with the order',
+    type: [TicketInfoDto],
+  })
   tickets: TicketInfoDto[];
 
   constructor(order: Order, tickets: Ticket[]) {
