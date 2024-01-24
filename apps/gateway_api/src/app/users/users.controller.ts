@@ -15,15 +15,16 @@ import { UserSessionDto } from 'apps/gateway_api/src/domain/dtos/user-session.dt
 import { UserDto } from 'apps/gateway_api/src/domain/dtos/user.dto';
 import { CurrentUser } from 'libs/security/decorators/current-user.decorator';
 import { Roles } from 'libs/security/decorators/roles.decorator';
+import { I18nService } from 'nestjs-i18n';
 import { UpdateUserForm } from './domain/update-user.form';
 import { UsersService } from './users.service';
-import { I18nService } from 'nestjs-i18n';
 
 @Controller('users')
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
-    private readonly i18n: I18nService) {}
+    private readonly i18n: I18nService,
+  ) {}
 
   @Get('/profile')
   async findUser(@CurrentUser() currentUser: UserSessionDto) {
@@ -40,7 +41,9 @@ export class UsersController {
   async findById(@Param('userId') userId: string) {
     const user = await this.usersService.findById({ id: userId });
     if (!user) {
-      const errorMessage = await this.i18n.translate('users.userNotFoundById', { args: { userId } });
+      const errorMessage = await this.i18n.translate('users.userNotFoundById', {
+        args: { userId },
+      });
       throw new NotFoundException(errorMessage);
     }
     return UserDto.fromEntity(user);

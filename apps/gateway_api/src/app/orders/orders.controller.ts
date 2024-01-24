@@ -7,17 +7,23 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
-import { Role } from '@prisma/client';
+import {
+  ApiBadRequestResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Role, User } from '@prisma/client';
 import { CurrentUser } from 'libs/security/decorators/current-user.decorator';
 import { Roles } from 'libs/security/decorators/roles.decorator';
+import { I18nService } from 'nestjs-i18n';
 import { OrderWithTicketsDto } from '../../domain/dtos/order-with-tickets.dto';
 import { OrderDto } from '../../domain/dtos/order.dto';
 import { TicketInfoDto } from '../../domain/dtos/ticketInfo.dto';
 import { UserSessionDto } from '../../domain/dtos/user-session.dto';
 import { UpdateOrderForm } from './domain/update-order.form';
 import { OrdersService } from './orders.service';
-import { I18nService } from 'nestjs-i18n';
 
 @ApiTags('orders')
 @Controller('orders')
@@ -28,7 +34,7 @@ export class OrdersController {
   ) {}
 
   @ApiOperation({ summary: 'Create a new order' })
-  @ApiOkResponse({ description: 'Order successfully created' })  
+  @ApiOkResponse({ description: 'Order successfully created' })
   @Roles(Role.MANAGER, Role.USER)
   @Post()
   async createOrder(
@@ -113,5 +119,12 @@ export class OrdersController {
       const errorMessage = await this.i18n.translate('orders.updateError');
       throw new BadRequestException(errorMessage);
     }
+  }
+
+  @Roles(Role.MANAGER)
+  @Post('getUserOrders')
+  async getUserOrders(@Body() user: Pick<User, 'email'>) {
+    const ordersWithTickets = await this.ordersService.getAllUserOrders(user);
+    return OrderWithTicketsDto.fromEntities(ordersWithTickets);
   }
 }

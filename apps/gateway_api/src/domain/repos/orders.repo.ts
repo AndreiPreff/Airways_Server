@@ -118,4 +118,12 @@ export class OrdersRepo {
       });
     }
   }
+
+  async getAllUserOrders(order: Pick<Order, 'userId'>) {
+    return await this.prisma.order.findMany({
+      where: {
+        userId: order.userId,
+      },
+    });
+  }
 }

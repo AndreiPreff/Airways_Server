@@ -55,13 +55,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleDisconnect(@ConnectedSocket() client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
     const userId = client.handshake.query.userId as string;
-    const isManager = client.handshake.query.isManager as string;
-    console.log(isManager);
 
-    if (!isManager) {
+    if (userId) {
       const roomId = userId;
-      await this.redisService.updateRoomStatus(roomId, 'inactive');
-      await this.redisService.notifyAdminRoomStatus(roomId, 'inactive');
+      await this.redisService.updateRoomStatus(roomId, 'inactive'); // Обновляем статус комнаты
     }
   }
 
@@ -123,6 +120,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       console.log(
         `Room ${notification.roomId} has status: ${notification.status}`,
       );
+      // Добавьте дополнительную логику по мере необходимости
     } catch (error) {
       console.error('Error parsing admin notification:', error);
     }
