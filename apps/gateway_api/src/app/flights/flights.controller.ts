@@ -1,23 +1,23 @@
 import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
-import { Flight } from '@prisma/client';
-import { Public } from 'libs/security/decorators/public.decorator';
-import { FindTicketsForm } from './domain/find-tickets.form';
-import { FlightsService } from './flights.service';
-import { I18nService } from 'nestjs-i18n';
 import {
   ApiBadRequestResponse,
-  ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import { Flight } from '@prisma/client';
+import { Public } from 'libs/security/decorators/public.decorator';
+import { I18nService } from 'nestjs-i18n';
+import { FindTicketsForm } from './domain/find-tickets.form';
+import { FlightsService } from './flights.service';
 
 @ApiTags('flights')
 @Controller('flights')
 export class FlightsController {
   constructor(
     private readonly flightsService: FlightsService,
-    private readonly i18n: I18nService,) {}
+    private readonly i18n: I18nService,
+  ) {}
 
   @Public()
   @Post('/available-tickets')

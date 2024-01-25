@@ -13,12 +13,12 @@ import {
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
+  ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
-  ApiTags,
   ApiOperation,
-  ApiCreatedResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 
 import { UsersService } from 'apps/gateway_api/src/app/users/users.service';
@@ -26,13 +26,12 @@ import { UserSessionDto } from 'apps/gateway_api/src/domain/dtos/user-session.dt
 import { CurrentUser } from 'libs/security/decorators/current-user.decorator';
 import { Public } from 'libs/security/decorators/public.decorator';
 import { RefreshTokenGuard } from 'libs/security/guards/refresh-token.guard';
+import { I18nService } from 'nestjs-i18n';
 import { TokensDto } from '../../domain/dtos/tokens.dto';
 import { CreateUserForm } from '../users/domain/create-user.form';
 import { AuthService } from './auth.service';
 import { LoginForm } from './domain/login.form';
 import { ResetPasswordForm } from './domain/reset-password.form';
-import { I18nService } from 'nestjs-i18n';
-import path from 'path';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -141,7 +140,7 @@ export class AuthController {
     const user = await this.usersService.findByEmail({ email: form.email });
     if (!user)
       throw new NotFoundException(
-        await this.i18n.translate('auth.userNotFound')
+        await this.i18n.translate('auth.userNotFound'),
       );
 
     const isValid = await this.authService.comparePasswords(

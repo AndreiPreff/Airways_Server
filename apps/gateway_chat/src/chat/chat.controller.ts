@@ -1,5 +1,7 @@
 import { Controller, Get, Param } from '@nestjs/common';
+import { Role } from '@prisma/client';
 import { PrismaService } from 'libs/prisma/prisma.service';
+import { Roles } from 'libs/security/decorators/roles.decorator';
 import { RedisService } from '../redis/redis.service';
 
 @Controller('chat')
@@ -14,8 +16,7 @@ export class ChatController {
     try {
       const messages = await this.prisma.message.findMany({
         where: { roomId: roomId },
-        orderBy: { createdAt: 'desc' },
-        take: 50,
+        orderBy: { createdAt: 'asc' },
       });
       return messages;
     } catch (error) {
@@ -23,6 +24,8 @@ export class ChatController {
       return [];
     }
   }
+
+  @Roles(Role.MANAGER)
   @Get()
   async getAllChats() {
     try {

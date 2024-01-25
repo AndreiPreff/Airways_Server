@@ -49,14 +49,14 @@ export class UsersController {
     return UserDto.fromEntity(user);
   }
 
-  @Roles(Role.ADMIN, Role.USER)
+  @Roles(Role.ADMIN)
   @Get()
   async findAll() {
     const entities = await this.usersService.findAll();
     return UserDto.fromEntities(entities);
   }
 
-  @Roles(Role.ADMIN, Role.USER) //change
+  @Roles(Role.ADMIN)
   @Patch(':userId')
   async update(@Param('userId') userId: string, @Body() body: UpdateUserForm) {
     const form = UpdateUserForm.from(body);
