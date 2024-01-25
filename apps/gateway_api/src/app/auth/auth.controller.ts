@@ -32,6 +32,7 @@ import { AuthService } from './auth.service';
 import { LoginForm } from './domain/login.form';
 import { ResetPasswordForm } from './domain/reset-password.form';
 import { I18nService } from 'nestjs-i18n';
+import path from 'path';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -140,7 +141,7 @@ export class AuthController {
     const user = await this.usersService.findByEmail({ email: form.email });
     if (!user)
       throw new NotFoundException(
-        await this.i18n.translate('auth.userNotFound'),
+        await this.i18n.translate('auth.userNotFound')
       );
 
     const isValid = await this.authService.comparePasswords(

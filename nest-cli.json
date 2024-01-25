@@ -19,9 +19,9 @@
         "tsConfigPath": "apps/gateway_api/tsconfig.app.json",
         "assets": [
           {
-            "include": "i18n/**/*",
+            "include": "./i18n/**/*",
             "watchAssets": true,
-            "outDir": "dist/apps/gateway_api"
+            "outDir": "dist/apps/gateway_api/src/i18n"
       }
     ]
       }
