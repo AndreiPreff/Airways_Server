@@ -5,7 +5,7 @@ module.exports = {
   plugins: [
     new CopyPlugin({
       patterns: [
-        { from: 'apps/gateway_api/i18n', to: 'apps/gateway_api/i18n' },
+        { from: 'apps/gateway_api/src/i18n', to: 'apps/gateway_api/src/i18n' },
       ],
     }),
   ],
