@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { Order, Status, Ticket } from '@prisma/client';
+import { Order, Status, Ticket, User } from '@prisma/client';
 import { Pick } from '@prisma/client/runtime/library';
 import { PrismaService } from 'libs/prisma/prisma.service';
 import { FlightsRepo } from '../../domain/repos/flights.repo';
 import { OrdersRepo } from '../../domain/repos/orders.repo';
 import { TicketsRepo } from '../../domain/repos/tickets.repo';
+import { UsersRepo } from '../../domain/repos/users.repo';
 
 @Injectable()
 export class OrdersService {
@@ -12,6 +13,7 @@ export class OrdersService {
     private readonly ordersRepo: OrdersRepo,
     private readonly ticketsRepo: TicketsRepo,
     private readonly flightsRepo: FlightsRepo,
+    private readonly usersRepo: UsersRepo,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -47,6 +49,22 @@ export class OrdersService {
   ): Promise<{ order: Order; tickets: Ticket[] }[]> {
     const orders = await this.ordersRepo.getOrdersById(data);
 
+    const ordersWithTickets = [];
+
+    for (const order of orders) {
+      const tickets = await this.getAllOrderTickets({ id: order.id });
+      ordersWithTickets.push({
+        order,
+        tickets,
+      });
+    }
+
+    return ordersWithTickets;
+  }
+
+  async getAllUserOrders(data: Pick<User, 'email'>) {
+    const user = await this.usersRepo.findByEmail({ email: data.email });
+    const orders = await this.ordersRepo.getAllUserOrders({ userId: user.id });
     const ordersWithTickets = [];
 
     for (const order of orders) {

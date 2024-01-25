@@ -2,10 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { UsersRepo } from 'apps/gateway_api/src/domain/repos/users.repo';
 import * as bcrypt from 'bcrypt';
+import { OrdersRepo } from '../../domain/repos/orders.repo';
 
 @Injectable()
 export class UsersService {
-  constructor(private usersRepo: UsersRepo) {}
+  constructor(
+    private usersRepo: UsersRepo,
+    private ordersRepo: OrdersRepo,
+  ) {}
 
   async create(
     user: Pick<User, 'email' | 'first_name' | 'last_name' | 'password'>,
@@ -39,6 +43,7 @@ export class UsersService {
   }
 
   async delete(user: Pick<User, 'id'>) {
+    await this.ordersRepo.deleteOrders({ userId: user.id });
     return this.usersRepo.delete(user);
   }
 
