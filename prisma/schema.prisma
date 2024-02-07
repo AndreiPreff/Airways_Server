@@ -1,0 +1,111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER    @map("user")
+  ADMIN   @map("admin")
+  MANAGER @map("manager")
+}
+
+enum Status {
+  BOOKED    @map("booked")
+  PAID      @map("paid")
+  CANCELLED @map("cancelled")
+}
+
+enum Direction {
+  THERE @map("there")
+  BACK  @map("back")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  email        String   @unique
+  password     String
+  first_name   String
+  last_name    String
+  role         Role     @default(USER)
+  refreshToken String?
+
+  orders   Order[]
+  messages Message[]
+
+  @@index([id])
+  @@index([email])
+}
+
+model Order {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  order_total Float
+  status      Status
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  tickets     Ticket[]
+
+  @@index([id])
+  @@index([userId])
+}
+
+model Ticket {
+  id                      String    @id @default(uuid())
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  status                  Status
+  price                   Float
+  passengerName           String?
+  passengerLastName       String?
+  passengerPassportNumber String?
+  direction               Direction @default(THERE)
+  flight                  Flight    @relation(fields: [flightId], references: [id])
+  flightId                String
+  order                   Order     @relation(fields: [orderId], references: [id])
+  orderId                 String
+
+  @@index([id])
+  @@index([orderId])
+  @@index([passengerPassportNumber])
+  @@index([direction])
+}
+
+model Flight {
+  id                String   @id @default(uuid())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  flight_number     String
+  from              String
+  to                String
+  departure_time    DateTime
+  arrival_time      DateTime
+  price             Float
+  available_tickets Int
+  tickets           Ticket[]
+
+  @@index([id])
+  @@index([departure_time])
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  content   String
+  roomId    String
+  senderId  String
+  user      User     @relation(fields: [senderId], references: [id])
+
+  @@index([id])
+  @@index([roomId])
+}
