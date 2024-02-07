@@ -8,7 +8,6 @@ It consists of 4 repositories: Airways_Server, Airways_Client, Airways_Admin, Ai
     # git clone https://github.com/AndreiPreff/Airways_Admin.git
     # git clone https://github.com/AndreiPreff/Airways_Client.git
     # git clone https://github.com/AndreiPreff/Airways_Common.git
-  # switch to branch *develop* in each repo
   # run the command *npm install* in each repo
   # in repo Airways_Client run the command *git submodule update  --remote --merge*
   # in repo Airways_Admin run the command *git submodule update  --remote --merge*
